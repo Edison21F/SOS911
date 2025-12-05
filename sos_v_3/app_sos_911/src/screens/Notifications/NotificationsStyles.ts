@@ -1,0 +1,239 @@
+import { StyleSheet, Platform, StatusBar } from 'react-native';
+import { normalize } from '../../utils/dimensions'; // Función para normalizar tamaños en distintas pantallas
+
+export const styles = StyleSheet.create({
+  // Imagen de fondo que ocupa toda la pantalla
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+
+  // Contenedor principal de la pantalla
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent', // Fondo transparente para respetar la imagen de fondo
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, // Ajuste del padding en Android
+  },
+
+  // Contenido de la pantalla, incluyendo las notificaciones
+  content: {
+    flex: 1,
+    padding: normalize(15), // Espaciado interno ajustable
+  },
+
+  // Estilo de la tarjeta de notificación
+  notificationCard: {
+    backgroundColor: '#ffffff', // Fondo blanco para destacar la notificación
+    padding: normalize(20),
+    borderRadius: normalize(15), // Bordes redondeados
+    marginBottom: normalize(15), // Espacio entre tarjetas
+    shadowColor: '#000', // Sombras para dar efecto de elevación
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5, // Sombra en Android
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)', // Borde sutil
+  },
+
+  // Encabezado de la notificación (nombre de la comunidad y hora)
+  notificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // Distribuye los elementos a los extremos
+    marginBottom: normalize(10),
+  },
+
+  // Texto con el nombre de la comunidad
+  communityText: {
+    fontSize: normalize(16),
+    fontWeight: 'bold',
+    color: '#2d2d2d',
+    textAlign: 'left', // Alineación ajustada a la izquierda
+  },
+
+  // Texto con la hora de la notificación
+  timeText: {
+    fontSize: normalize(14),
+    color: '#9b9b9b', // Color gris para menor jerarquía visual
+    textAlign: 'right',
+  },
+
+  // Contenedor del contenido de la notificación (título, descripción e imagen)
+  notificationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: normalize(10),
+  },
+
+  // Contenedor del texto de la notificación
+  notificationInfo: {
+    flex: 1, // Ocupa el espacio restante
+    marginLeft: normalize(15), // Espacio entre el texto y la imagen
+  },
+
+  // Título de la notificación
+  notificationTitle: {
+    fontSize: normalize(18),
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  // Descripción de la notificación
+  notificationDescription: {
+    fontSize: normalize(14),
+    color: '#666',
+    marginTop: normalize(4),
+  },
+
+  // Imagen de perfil o ícono dentro de la notificación
+  profileImage: {
+    width: normalize(48),
+    height: normalize(48),
+    borderRadius: normalize(24),
+    borderWidth: 2,
+    borderColor: '#fff',
+    marginLeft: normalize(8),
+  },
+
+  // Contenedor de las acciones dentro de la notificación
+  notificationActions: {
+    flexDirection: 'row',
+    justifyContent: 'center', // Alineación centrada
+    alignItems: 'center',
+    marginTop: normalize(10),
+    width: '100%',
+  },
+
+  // Botón para ver la dirección del usuario
+  deleteButton: {
+    backgroundColor: '#008080', // Color verde esmeralda más oscuro
+    padding: normalize(10),
+    borderRadius: normalize(5),
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+  },
+
+  // Botón para marcar la alerta como innecesaria
+  innecesarioButton: {
+    backgroundColor: '#2F7E70',
+    padding: normalize(10),
+    borderRadius: normalize(5),
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+  },
+
+  // Texto dentro del botón de "Ver dirección de usuario"
+  deleteText: {
+    fontSize: normalize(14),
+    color: '#fff',
+    fontWeight: 'bold',
+    marginRight: normalize(5), // Espaciado entre el texto y el ícono
+  },
+
+  // Estilos para notificaciones de tipo SOS
+  sosAlert: {
+    fontSize: normalize(18),
+    fontWeight: 'bold',
+    color: '#FF9E5D', // Color naranja
+  },
+
+  // Estilos para notificaciones de tipo 911
+  alert911: {
+    fontSize: normalize(18),
+    fontWeight: 'bold',
+    color: '#FF4D4D', // Color rojo fuerte
+  },
+
+  // Estilos para notificaciones innecesarias
+  unnecessaryAlert: {
+    fontSize: normalize(18),
+    fontWeight: 'bold',
+    color: '#2F7E70', // Verde oscuro
+  },
+
+  // Texto dentro del botón de "Innecesario"
+  innecesarioText: {
+    fontSize: normalize(14),
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: normalize(10), // Espaciado entre el ícono y el texto
+  },
+
+  // Agrega los estilos para la tarjeta tipo web
+  // Estilos para la tarjeta tipo web con barra lateral
+  cardContainer: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    backgroundColor: 'transparent',
+    borderRadius: normalize(18),
+    marginBottom: normalize(18),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
+    maxWidth: '100%',
+    minHeight: normalize(110),
+  },
+  sideBar: {
+    width: normalize(48),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopLeftRadius: normalize(18),
+    borderBottomLeftRadius: normalize(18),
+  },
+  cardContent: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderTopRightRadius: normalize(18),
+    borderBottomRightRadius: normalize(18),
+    padding: normalize(16),
+    justifyContent: 'center',
+  },
+  notificationContentWeb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: normalize(10),
+  },
+  // Colores de barra lateral (suaves)
+  sosBar: {
+    backgroundColor: '#FFB26B', // naranja suave
+  },
+  alert911Bar: {
+    backgroundColor: '#FF6B6B', // rojo suave
+  },
+  unnecessaryBar: {
+    backgroundColor: '#4EC9B0', // verde suave
+  },
+  // Botones de acción (más oscuros para contraste)
+  sosButton: {
+    backgroundColor: '#E09A4F',
+  },
+  alert911Button: {
+    backgroundColor: '#D94A4A',
+  },
+  unnecessaryButton: {
+    backgroundColor: '#399E8A',
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: normalize(14),
+  },
+
+  // Botón de acción general para todas las acciones
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: normalize(10),
+    paddingVertical: normalize(10),
+    width: '100%',
+    marginTop: normalize(4),
+  },
+});

@@ -1,0 +1,587 @@
+/* --- INICIO: NUEVAS ANIMACIONES DE ENTRADA Y SALIDA --- */
+
+// Keyframes para la animación de entrada de los paneles
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-80px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(80px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Keyframes para la animación de aparición de los elementos del formulario
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+// Keyframes para la animación de SALIDA de toda la página
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+
+// --- LÓGICA DE LAS ANIMACIONES ---
+.registro-outer-container {
+
+  // Estado inicial antes de la animación de entrada
+  .left-container,
+  .right-container {
+    opacity: 0;
+  }
+
+  .form-group,
+  .titulo,
+  .texto-enlace,
+  .checkbox-group,
+  .boton {
+    opacity: 0;
+  }
+
+  // --- TRIGGER DE ANIMACIÓN DE ENTRADA ---
+  // Cuando el contenedor tiene la clase 'loaded', se activan estas animaciones
+  &.loaded {
+    .left-container {
+      animation: slideInLeft 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .right-container {
+      animation: slideInRight 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    // Animación escalonada para los elementos del formulario
+    .titulo {
+      animation: fadeInUp 0.5s 0.4s forwards;
+    }
+
+    .form-columns .form-group:nth-of-type(1) {
+      animation: fadeInUp 0.5s 0.5s forwards;
+    }
+
+    .form-columns .form-group:nth-of-type(2) {
+      animation: fadeInUp 0.5s 0.6s forwards;
+    }
+
+    .form-columns .form-group:nth-of-type(3) {
+      animation: fadeInUp 0.5s 0.7s forwards;
+    }
+
+    .form-columns .form-group:nth-of-type(4) {
+      animation: fadeInUp 0.5s 0.8s forwards;
+    }
+
+    .form-columns .form-group:nth-of-type(5) {
+      animation: fadeInUp 0.5s 0.9s forwards;
+    }
+
+       // AÑADE ESTA LÍNEA para la Fecha de Nacimiento
+    .form-columns .form-group:nth-of-type(6) { /* */
+      animation: fadeInUp 0.5s 1.0s forwards; /* */
+    }
+
+    .checkbox-group {
+      animation: fadeInUp 0.5s 1.0s forwards;
+    }
+
+    .boton {
+      animation: fadeInUp 0.5s 1.1s forwards;
+    }
+
+    .texto-enlace {
+      animation: fadeInUp 0.5s 1.2s forwards;
+    }
+  }
+
+  // --- TRIGGER DE ANIMACIÓN DE SALIDA ---
+  // Cuando el contenedor tiene la clase 'exiting', se activa esta animación
+  &.exiting {
+
+    // Hacemos que la tarjeta se desvanezca
+    .registro-card {
+      animation: fadeOut 0.5s ease-out forwards;
+    }
+  }
+}
+
+/* --- FIN: NUEVAS ANIMACIONES --- */
+
+/*-----------------------------------------*/
+// Variables globales (puedes definir colores y valores reutilizables)
+$primary-color: #00acac; // Color principal usado en botones y textos destacados
+$secondary-color: #008b8b; // Color secundario para efectos hover
+$background-light: #f0f4f8; // Color de fondo claro
+$text-dark: #333; // Color de texto oscuro
+$white: #ffffff; // Color blanco
+
+// Contenedor externo
+.registro-outer-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1; // Asegura que el contenido esté sobre el fondo decorativo
+
+  @media (max-width: 768px) {
+    flex-direction: column; // Cambiar a columna en pantallas pequeñas
+    height: auto; // Ajustar altura automáticamente
+  }
+}
+
+// Contenedor principal
+.registro-container {
+  display: flex; // Mostrar los hijos en fila
+  width: 90%; // Ancho relativo al viewport
+  max-width: 1200px; // Ancho máximo fijo
+  border-radius: 16px; // Bordes redondeados
+  overflow: hidden; // Ocultar contenido que se desborde
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); // Sombra del contenedor
+  background-color: $white; // Fondo blanco
+
+  @media (max-width: 768px) {
+    flex-direction: column; // Cambiar a columna en pantallas pequeñas
+    height: auto; // Ajustar altura automáticamente
+  }
+}
+
+// Contenedor izquierdo
+.left-container {
+  flex: 1 1 50%; // Ocupa la mitad del espacio disponible
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1.5rem; // Espaciado interno
+  background: linear-gradient(to top right, #026b6b, #2D353C);
+  align-items: center;
+  color: #fff; // Texto en color blanco
+  text-align: center; // Centrar texto
+  margin-top: 2rem; // Espacio superior
+
+  .welcome-content {
+    max-width: 80%; // Limitar el ancho del contenido
+  }
+
+  .welcome-image {
+    width: 99px; // Ancho fijo para la imagen
+    margin-bottom: 1rem; // Espacio inferior
+  }
+
+  .login-title {
+    font-size: 2.99rem; // Más grande el "Sos911"
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+
+    .sos-text {
+      color: #fff;
+    }
+
+    .nine-eleven-text {
+      color: #00acac;
+    }
+  }
+
+  .welcome-text {
+    font-size: 1.4rem; // Más grande el subtítulo
+    margin-bottom: 1.5rem;
+    color: #e0e0e0;
+  }
+
+.welcome-person-image {
+  width: 214px;
+  height: 214px; 
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 1rem;
+
+  // Sombra múltiple con un anillo más grueso
+  box-shadow: 
+    // Anillo más grueso y notorio de 4px
+    0 0 0 9px rgba(0, 172, 172, 0.8), 
+    // Resplandor suave para darle profundidad
+    0 0 30px 7px rgba(0, 172, 172, 0.25);
+  
+  transition: all 0.3s ease-in-out; // Transición para sombra y transform
+
+  &:hover {
+    cursor: pointer;
+    // El anillo se hace aún más grueso y brillante en el hover
+    box-shadow: 
+      0 0 0 6px rgba(13, 226, 226, 1),
+      0 0 40px 12px rgba(0, 172, 172, 0.35);
+    // Añadimos un ligero zoom para un efecto más dinámico
+    transform: scale(1.02);
+  }
+}
+}
+
+// Contenedor derecho
+.right-container {
+  flex: 1 1 50%; // Ocupa la mitad del espacio disponible
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1.5rem; // Espaciado interno
+  background: #1f2937; // <--- USA ESTE COLOR
+  color: #fff; // Texto en color blanco
+  border-radius: 0 18px 0 0; // Solo la esquina superior derecha redondeada
+
+  @media (max-width: 768px) {
+    padding: 2rem; // Reducir espaciado en pantallas pequeñas
+  }
+
+  .titulo {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.2rem;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .form-group {
+    width: 100%;
+    margin-bottom: 1rem;
+
+    .etiqueta {
+      color: #ffffff;
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+      display: block;
+    }
+
+    /* Estilos para el contenedor del input con icono */
+    .input-with-icon {
+      position: relative; // Contenedor padre para el posicionamiento absoluto del icono
+      display: flex; // Para alinear el icono y el input si quieres un layout diferente
+      align-items: center; // Centrar verticalmente el icono y el input
+
+      .input-icon {
+        position: absolute; // Posicionar el icono absolutamente
+        color: #ffffff; // Color del icono (blanco)
+        font-size: 1.1rem; // Tamaño del icono
+        z-index: 10; // Asegura que el icono esté por encima del input
+
+        &.left-icon {
+          // Estilos para los iconos a la izquierda
+          left: 10px; // Distancia desde la izquierda
+        }
+
+        &.password-toggle-icon {
+          // Estilos para el icono del "ojito"
+          right: 10px; // Distancia desde la derecha
+          cursor: pointer; // Cambiar el cursor a "pointer" para indicar que es clickeable
+        }
+      }
+
+      .entrada {
+        width: 100%; // Ocupar todo el ancho
+        padding: 0.6rem 0.9rem; // Espaciado interno
+        padding-left: 40px; // Añade espacio a la izquierda para el icono
+        border-radius: 8px; // Bordes redondeados
+        border: none; // Sin borde
+        background: #18192b; // Color de fondo
+        color: #fff; // Texto en blanco
+        font-size: 1rem; // Tamaño de fuente
+        margin-top: 0.2rem; // Margen superior
+        outline: none; // Sin contorno
+        transition: box-shadow 0.2s; // Transición suave para la sombra
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); // Sombra sutil
+
+        // ESTILOS PARA CORREGIR EL AUTOCOMPLETADO Y HOVER/FOCUS
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0px 1000px #18192b inset !important; // Fondo oscuro para autocompletado
+          -webkit-text-fill-color: #fff !important; // Texto blanco para autocompletado
+          transition: background-color 5000s ease-in-out 0s; // Truco para mantener el color de fondo
+        }
+
+        &:hover {
+          background: #18192b; // Asegura que el fondo permanezca oscuro
+          color: #fff; // Asegura que el texto permanezca blanco
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 2px #00acac; // Tu sombra verde al enfocar
+          background: #18192b; // Asegura que el fondo permanezca oscuro
+          color: #fff; // Asegura que el texto permanezca blanco
+        }
+
+        &.password-input {
+          // Estilos específicos para el input de contraseña
+          padding-right: 40px; // Añade espacio a la derecha para el icono del ojo
+        }
+      }
+    }
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+
+    .checkbox {
+      accent-color: #00acac;
+      margin-top: 0.2rem;
+      flex-shrink: 0;
+    }
+
+    p {
+      color: #bdbdbd;
+      font-size: 0.85rem;
+      margin: 0 0 0 0.5rem;
+    }
+
+    .enlace-terminos {
+      color: #01dada;
+      text-decoration: underline;
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
+
+  .boton {
+    width: 100%;
+    padding: 0.7rem 0;
+    background-color: #008080;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(46, 74, 98, 0.18);
+
+    &:hover {
+      background-color: #005f5f;
+      box-shadow: 0 4px 16px rgba(46, 74, 98, 0.28);
+    }
+  }
+
+  .texto-enlace {
+    margin-top: 1.2rem;
+    color: #bdbdbd;
+    font-size: 0.95rem;
+    text-align: center;
+
+    .enlace {
+      color: #01dada;
+      text-decoration: underline;
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
+
+  form {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+
+    @media (max-width: 600px) {
+      max-width: 100%;
+    }
+  }
+}
+
+// Estilos para el modal (mantener los que ya tienes)
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: $white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+
+  .modal-texto {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+  }
+
+  .boton-cerrar {
+    background-color: $primary-color;
+    color: $white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $secondary-color;
+    }
+
+    @media (max-width: 768px) {
+      padding: 0.6rem;
+    }
+  }
+}
+
+.form-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  flex: 1 1 45%;
+  min-width: 200px;
+  margin-bottom: 0.5rem;
+}
+
+.full-width {
+  flex: 0 0 100%;
+}
+
+@media (max-width: 700px) {
+  .form-columns {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-group {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .registro-card {
+    flex-direction: column;
+    width: 98vw;
+    min-height: unset;
+  }
+
+  .left-container,
+  .right-container {
+    border-radius: 18px 18px 0 0;
+    max-width: 100vw;
+  }
+}
+
+.registro-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  width: 900px; // Más pequeño y proporcionado
+  max-width: 96vw;
+  min-height: 340px;
+ background: #1f2937; // <--- USA ESTE COLOR
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  overflow: hidden;
+  margin: 2rem auto;
+
+  @media (max-width: 1000px) {
+    width: 98vw;
+  }
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+    width: 98vw;
+    min-height: unset;
+    margin: 1rem 0;
+  }
+}
+
+.registro-bg {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(to top right, #026b6b, #2D353C); // Solo el fondo gradiente
+
+  pointer-events: none;
+}
+
+/* Agrega esto a tu registro.scss */
+.form-group.full-width .entrada[type="date"] {
+  width: 100% !important;
+  min-width: 200px;
+  display: block;
+  background: #232b3b;
+  color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  height: 40px;
+  // Elimina o comenta la línea de padding-left
+  // padding-left: 15px; 
+  // Y si tienes, asegúrate de que tampoco haya un padding-right problemático para este campo
+  // Considera usar un padding general para el input que no interfiera con el icono nativo
+  padding: 0.6rem 0.9rem; /* Un padding más estándar que permite que se vea el icono nativo */
+}
+
+/* --- NUEVO: REGLAS ESPECÍFICAS PARA INPUTS CON ICONOS --- */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon .input-icon.left-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.input-with-icon input[type="date"].entrada {
+  padding-left: 40px !important;
+}

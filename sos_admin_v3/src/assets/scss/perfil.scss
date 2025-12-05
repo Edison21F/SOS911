@@ -1,0 +1,286 @@
+/* SCSS Styles (perfil.scss): */
+/*-----------------------------------------*/
+.profile-header {
+  // Estilo para el encabezado del perfil, incluyendo un fondo degradado y estilos generales.
+  background: linear-gradient(145deg, #153453, #014646); // Fondo con degradado en un ángulo de 145 grados.
+  padding: 3rem 1rem 2rem 1rem; // Espaciado interno de 3rem arriba y abajo, 1rem a los lados.
+  color: white; // Color de texto blanco.
+  border-radius: 50px 20px 0 0; // Bordes redondeados con un radio de 10px.
+  font-size: 1.2rem; // Ajusta el valor según lo grande que quieras el texto
+  text-align: center; // Centra el texto en el encabezado.
+  margin-bottom: 0; // Elimina el margen inferior.
+
+  .profile-image,
+  .profile-placeholder {
+      // Estilo compartido para la imagen de perfil o el contenedor en su ausencia.
+      width: 120px; // Ancho fijo de 120px.
+      height: 120px; // Alto fijo de 120px.
+      border: 4px solid rgba(255, 255, 255, 0.25); // Borde blanco semitransparente de 4px.
+      font-size: 2.5rem; // Tamaño de fuente para las iniciales del avatar.
+      font-weight: 700; // Grosor de fuente para las iniciales del avatar.
+      background: #1a3a5d; // Fondo azul oscuro para el contenedor de la imagen de perfil.
+      display: flex; // Usa flexbox para centrar las iniciales en el contenedor.
+      align-items: center; // Alinea verticalmente las iniciales al centro.
+      justify-content: center; // Alinea horizontalmente las iniciales al centro.
+      margin: 0 auto; // Centra el contenedor de la imagen de perfil horizontalmente.
+  }
+
+  .avatar-initials span {
+      // Estilo para las iniciales del avatar.
+      color: #fff; // Color de las iniciales en blanco.
+      font-size: 2.5rem; // Tamaño de fuente para las iniciales.
+      font-weight: 700; // Grosor de fuente para las iniciales.
+      letter-spacing: 2px; // Espaciado entre letras para las iniciales.
+  }
+}
+
+.perfil-cards-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0 1rem 0;
+  background: #fff;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+}
+
+.perfil-cards-list {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.info-card {
+  background: #f8fafc;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.04);
+  transition: none;
+  cursor: default;
+  margin-bottom: 0;
+  padding: 1.1rem 1.2rem;
+  min-width: 220px;
+  width: 100%;
+}
+
+.info-card-icon {
+  background: #e6f0fa;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-card-label {
+  font-size: 0.94rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin-bottom: 0.1rem;
+}
+
+.info-card-text {
+  font-size: 1.09rem;
+  color: #222;
+  font-weight: 400; // Quitar negrita
+}
+
+.password-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+  padding: 1.1rem 1.2rem;
+  margin: 0 0 2rem 0;
+  max-width: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-left: 1.2rem;
+
+  .password-info {
+    flex: 1 1 0%;
+    text-align: left;
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  .password-btn-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: auto;
+    margin-left: 0;
+    margin-top: 0;
+  }
+
+  .password-btn {
+    min-width: 120px;
+    max-width: 320px;
+    width: auto;
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
+
+.password-info {
+  text-align: left;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.password-btn-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end !important;
+  width: 100%;
+  margin-left: 0;
+  margin-top: 0.5rem;
+  padding: 0;
+  @media (max-width: 991px) {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.password-btn {
+  min-width: 120px;
+  max-width: 320px;
+  width: auto;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #232d3b;
+  color: #fff;
+  border-radius: 7px;
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.04);
+  transition: background 0.2s;
+  padding: 0.55rem 0;
+  text-align: center;
+  display: block;
+  line-height: 1.2;
+  @media (max-width: 991px) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 auto;
+    display: block;
+  }
+}
+
+.info-card-text.d-none.d-md-block {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin-bottom: 0.2rem;
+}
+
+.password-card-col {
+  margin-left: 0;
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 992px) {
+  .password-card-col {
+    justify-content: flex-start;
+    margin-left: -75px; // Ajusta este valor para mover la tarjeta a la izquierda
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .perfil-cards-list {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .info-card {
+    min-width: unset;
+  }
+
+  .password-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    gap: 0.5rem;
+
+    .password-btn {
+      margin: 0 auto;
+      width: 100%;
+      min-width: 90px;
+      max-width: 100%;
+      font-size: 0.85rem;
+      padding: 0.5rem 0;
+      align-self: center;
+      display: block;
+    }
+  }
+
+  .password-form-responsive {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 991px) {
+  .password-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    gap: 0.5rem;
+    margin-left: 0;
+
+    .password-btn-wrapper {
+      justify-content: center;
+      margin-left: 0;
+      width: 100%;
+    }
+    .password-btn {
+      width: 100%;
+      min-width: 90px;
+      max-width: 100%;
+      font-size: 0.85rem;
+      padding: 0.5rem 0;
+      align-self: center;
+      display: block;
+    }
+  }
+  .password-form-responsive {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .password-form-responsive .col-12.col-md-6 {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+  .password-form-responsive .d-flex {
+    justify-content: flex-end !important;
+  }
+  .password-form-responsive .btn {
+    width: 100%;
+    min-width: unset;
+    max-width: 100%;
+  }
+}

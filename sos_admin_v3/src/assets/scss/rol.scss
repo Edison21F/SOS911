@@ -1,0 +1,105 @@
+/* SCSS Styles para rol.jsx */
+/*-----------------------------------------*/
+/* Título de la tarjeta */
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    white-space: nowrap; /* Mantén el texto en una sola línea */
+    overflow: hidden; /* Oculta el texto desbordado */
+    text-overflow: ellipsis; /* Agrega puntos suspensivos para texto largo */
+    margin-bottom: 0.5rem;
+}
+
+/* Diseño responsivo */
+.row > .col {
+    display: flex;
+    flex-direction: column;
+}
+
+.row-cols-1 > .col,
+.row-cols-sm-2 > .col,
+.row-cols-md-3 > .col,
+.row-cols-lg-4 > .col {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Asegura uniformidad en altura */
+}
+
+/* Ajustes para pantallas pequeñas */
+@media screen and (max-width: 768px) {
+    .row.row-cols-md-3 {
+        flex-wrap: wrap; /* Asegura que las columnas se ajusten automáticamente */
+    }
+
+    .row.row-cols-md-3 > .col {
+        flex: 0 0 50%; /* Cada columna ocupará el 50% del ancho */
+        max-width: 50%; /* Asegura que las columnas no excedan el 50% */
+    }
+
+    /* Estilos opcionales para tarjetas */
+    .card {
+        min-height: 300px; /* Ajusta la altura mínima para uniformidad */
+    }
+
+    .card-img-top {
+        height: 180px; /* Ajusta la altura de las imágenes */
+    }
+
+    .card-title {
+        font-size: 1rem; /* Ajusta el tamaño del texto */
+    }
+}
+
+/* Ajustes específicos para 375px x 785px */
+@media screen and (max-width: 375px) {
+    .row.row-cols-md-3 {
+        flex-wrap: wrap;
+    }
+
+    .row.row-cols-md-3 > .col {
+        flex: 0 0 100%; /* Cada tarjeta ocupa el 100% del ancho */
+        max-width: 100%;
+    }
+
+    /* Ajustes de estilo para tarjetas */
+    .card {
+        width: 90%; /* Ajusta el ancho de la tarjeta al 90% del contenedor */
+        margin: 0 auto; /* Centra la tarjeta */
+        min-height: 280px; /* Ajusta la altura mínima */
+    }
+
+    .card-img-top {
+        height: 160px; /* Ajusta la altura de las imágenes */
+    }
+
+    .card-title {
+        font-size: 1rem; /* Ajusta el tamaño del texto */
+    }
+}
+
+/* Ajustes específicos para 425px x 785px */
+@media screen and (max-width: 425px) {
+    .row.row-cols-md-3 {
+        flex-wrap: wrap;
+    }
+
+    .row.row-cols-md-3 > .col {
+        flex: 0 0 100%; /* Cada tarjeta ocupa el 100% del ancho */
+        max-width: 100%;
+    }
+
+    /* Ajustes de estilo para tarjetas */
+    .card {
+        width: 90%; /* Ajusta el ancho de la tarjeta al 90% del contenedor */
+        margin: 0 auto; /* Centra la tarjeta */
+        min-height: 290px; /* Ajusta la altura mínima */
+    }
+
+    .card-img-top {
+        height: 170px; /* Ajusta la altura de las imágenes */
+    }
+
+    .card-title {
+        font-size: 1rem; /* Ajusta el tamaño del texto */
+    }
+}

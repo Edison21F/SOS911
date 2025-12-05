@@ -1,0 +1,77 @@
+/* SCSS Styles (estadisticas.scss): */
+/*-----------------------------------------*/
+.estadisticas-container {
+    .row {
+        display: flex; /* Configura la fila para usar flexbox */
+        flex-wrap: wrap; /* Permite que los elementos dentro de la fila se envuelvan si es necesario */
+        margin: 0 -15px; /* Aplica márgenes negativos a ambos lados de los elementos para corregir el espaciado */
+    }
+
+    .col-md-6 {
+        flex: 0 0 50%; /* Los elementos ocupan el 50% del ancho del contenedor */
+        max-width: 50%; /* El ancho máximo es 50% */
+        padding: 15px; /* Se aplica un relleno de 15px a la columna */
+
+        @media (max-width: 992px) {
+            flex: 0 0 100%; /* En pantallas más pequeñas, las columnas ocupan el 100% */
+            max-width: 100%; /* El ancho máximo es 100% */
+        }
+    }
+
+    .panel {
+        border-radius: 8px; /* Bordes redondeados de 8px */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Agrega una sombra sutil alrededor del panel */
+        overflow: hidden; /* El contenido que sobresalga será recortado */
+        display: flex; /* Se utiliza flexbox para la disposición interna del panel */
+        flex-direction: column; /* El panel tendrá una disposición en columna */
+        height: 100%; /* El panel ocupa toda la altura disponible */
+
+        .panel-header {
+            padding: 15px; /* Se agrega relleno al encabezado del panel */
+
+            .panel-title {
+                font-size: 1.25rem; /* El tamaño de la fuente es de 1.25rem */
+                font-weight: bold; /* El texto es negrita */
+                margin: 0; /* Se elimina el margen del título */
+                color: #444; /* El color del texto es un gris oscuro */
+            }
+        }
+
+        .panel-body {
+            padding: 20px; /* Se agrega relleno en el cuerpo del panel */
+            display: flex; /* Usamos flexbox para el cuerpo del panel */
+            justify-content: center; /* Centra el contenido horizontalmente */
+            align-items: center; /* Centra el contenido verticalmente */
+            height: 315px; /* La altura del cuerpo es fija de 315px */
+        }
+
+        canvas {
+            max-width: 100%; /* El ancho máximo del canvas es el 100% del contenedor */
+            max-height: 100%; /* La altura máxima del canvas es el 100% */
+            height: auto !important; /* La altura es automática y aseguramos que no se sobrescriba */
+        }
+    }
+
+    /* Responsividad solo para las tarjetas de estadísticas */
+    @media (max-width: 768px) {
+        .col-md-6 .panel-body {
+            padding: 15px; /* Se reduce el relleno en pantallas más pequeñas */
+            height: 250px; /* Se reduce la altura a 250px */
+        }
+
+        .col-md-6 .panel-title {
+            font-size: 1rem; /* Se reduce el tamaño de la fuente del título */
+        }
+    }
+
+    @media (max-width: 576px) {
+        .col-md-6 .panel-body {
+            padding: 10px; /* Se reduce aún más el relleno en pantallas muy pequeñas */
+            height: 200px; /* La altura se reduce a 200px */
+        }
+
+        .col-md-6 .panel-title {
+            font-size: 0.9rem; /* El tamaño del título es aún más pequeño */
+        }
+    }
+}

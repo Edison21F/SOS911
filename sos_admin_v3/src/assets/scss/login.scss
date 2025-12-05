@@ -1,0 +1,310 @@
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px); // Empieza 25px más abajo
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); // Termina en su posición normal
+  }
+}
+
+// 2. Aplicamos la animación a los elementos que queremos que aparezcan
+.login-header,
+.login-subtitle,
+.login-form .form-group {
+  // Inicialmente, los elementos son invisibles para que la animación funcione al cargar
+  opacity: 0; 
+  
+  // Aplicamos la animación
+  animation-name: fadeInUp;
+  animation-duration: 0.7s;       // Duración de la animación
+  animation-timing-function: ease-out; // Hace que termine suavemente
+  animation-fill-mode: forwards;  // Mantiene el estado final (visible)
+}
+
+// 3. Creamos un efecto escalonado con retrasos
+.login-header                 { animation-delay: 0.1s; }
+.login-subtitle               { animation-delay: 0.2s; }
+.login-form .form-group:nth-of-type(1) { animation-delay: 0.3s; } // Input de usuario
+.login-form .form-group:nth-of-type(2) { animation-delay: 0.4s; } // Input de contraseña
+.login-form .form-group:nth-of-type(3) { animation-delay: 0.5s; } // Checkbox "Recuérdame"
+.login-form .form-group:nth-of-type(4) { animation-delay: 0.6s; } // Botón
+.login-register-text          { animation-delay: 0.7s; } // Texto de registro
+
+
+// Contenedor principal
+.login-container {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to top right, #026b6b, #2D353C);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 0;
+}
+
+// Elimina o comenta el bloque .login-container::before
+/*
+.login-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMTkuNSIgbnVtT2N0YXZlcz0iMTAiIHJlc3VsdD0idHVyYnVsZW5jZSIvPjxmZUNvbXBvc2l0ZSBvcGVyYXRvcj0iaW4iIGluPSJ0dXJidWxlbmNlIiBpbjI9IlNvdXJjZUFscGhhIiByZXN1bHQ9ImNvbXBvc2l0ZSIvPjxmZUNvbG9yTWF0cml4IGluPSJjb21wb3NpdGUiIHR5cGU9Imx1bWluYW5jZVRvQWxwaGEiLz48ZmVCbGVuZCBpbj0iU291cmNlR3JhcGhpYyIgaW4yPSJjb21wb3NpdGUiIG1vZGU9ImNvbG9yLWJ1cm4iLz48L2ZpbHRlcj48L2RlZnM+PGcgZmlsdGVyPSJ1cmwoJyNhJykiPjxwYXRoIGZpbGw9IiMyNmIiIGQ9Ik0wIDBoMTAwdjEwMEgweiIvPjxwYXRoIGQ9Ik0wIDB2MTAwaDEwMFYwWiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2U9IiM0OGYiIGZpbGw9IiMwMDAwIi8+PHBhdGggZmlsbD0iIzQ4ZjUiIGQ9Ik01MCAwaDF2MTAwaC0xeiIvPjxwYXRoIGZpbGw9IiM0OGY1IiBkPSJNMCA1MGgxMDB2MUgweiIvPjwvZz48L3N2Zz4=");
+  mask: linear-gradient(#0004, #000);
+  z-index: 1;
+  pointer-events: none;
+}
+*/
+
+// Contenido principal del login
+.login-content {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.9); // Fondo blanco semitransparente (NO TOCAR)
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 0; // Esquinas rectas, sin redondear
+  /* Doble reflejo translúcido y oscuro en los filos, más grueso */
+  box-shadow:
+    0 0 0 8px rgba(0, 0, 0, 0.13), // Primer filo más grueso y translúcido
+    0 0 32px 12px rgba(0, 0, 0, 0.22); // Segundo reflejo difuso más grueso y oscuro
+}
+
+// Estilo para la cabecera del login
+.login-header {
+  text-align: center; // Centra el texto de la cabecera
+}
+
+.login-logo {
+  width: 100px; // Tamaño del logo
+  height: 100px; // Tamaño del logo
+  margin-bottom: 15px; // Espacio debajo del logo
+}
+
+.login-title {
+  font-size: 3rem; // Tamaño del título principal
+  margin: 0; // Elimina el margen por defecto
+}
+
+.sos-text {
+  font-weight: bold; // Poner "Sos" en negrita
+  color: #333; // Color oscuro para "Sos"
+}
+
+.nine-eleven-text {
+  font-weight: bold; // Poner "911" en negrita
+  color: #00ACAC; // Color verde azulado para "911"
+}
+
+.login-subtitle {
+  font-size: 1.2rem; // Aumentamos el tamaño del subtítulo
+  margin-bottom: 25px; // Más espacio debajo del subtítulo
+  color: #666; // Color gris para el subtítulo
+}
+
+// Estilo para las etiquetas y inputs
+.login-label {
+  font-size: 2.5rem; // Aumentamos el tamaño de las etiquetas (Usuario, Contraseña)
+  color: #333; // Color oscuro
+  font-weight: bold; // Hacemos las etiquetas en negrita
+  margin-bottom: 10px; // Espacio debajo de las etiquetas
+  display: block; // Asegura que las etiquetas ocupen una línea completa
+}
+
+// Estilo de los inputs (Usuario, Contraseña)
+.login-input {
+  padding: 20px; // Aumentamos el relleno interno para hacer los inputs más grandes
+  border-radius: 8px; // Bordes redondeados
+  border: 1px solid #ddd; // Borde gris claro
+  font-size: 1.6rem; // Aumentamos el tamaño de la fuente dentro de los inputs
+  width: 100%; // Los inputs ocupan todo el ancho disponible
+  height: 55px; // Aumentamos la altura de los inputs
+  margin-bottom: 20px; // Más espacio entre los inputs
+}
+
+// Estilo del botón de inicio de sesión
+.login-content .btn-primary {
+  background-color: #008080; // Más oscuro que #00ACAC
+
+  font-size: 17px; // Aumentamos el tamaño de la fuente del botón (más grande)
+  padding: 10px; // Tamaño del relleno ajustado para hacerlo más grande
+
+  transition: background-color 0.3s ease; // Transición solo del color de fondo
+  width: 100%; // Aseguramos que ocupe el ancho completo
+}
+
+// Efecto hover en el botón
+.login-content .btn-primary:hover {
+  background-color: #005f5f; // Aún más oscuro al pasar el mouse
+  cursor: pointer; // Asegura que el cursor sea un puntero
+}
+
+// Estilo del texto de registro
+.login-register-text {
+  font-size: 1.04rem; // Tamaño del texto de registro
+  color: #333; // Color oscuro
+}
+
+// Estilo para los enlaces de registro
+.login-link {
+  color: #00ACAC; // Color verde azulado para los enlaces
+  text-decoration: none; // Sin subrayado
+  font-weight: bold; // Enlace en negrita
+}
+
+.login-link:hover {
+  text-decoration: underline; // Subrayado cuando el ratón pasa por encima
+}
+
+// Estilo para el ícono de usuario
+.login-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem; // Mismo tamaño para ambos iconos
+  color: #00ACAC;
+  z-index: 3;
+}
+
+// Media Queries para hacerlo responsive
+@media (max-width: 768px) {
+  .login-container {
+    height: 100vh; // Aseguramos que la altura sea siempre 100% de la pantalla
+  }
+
+  .login-content {
+    max-width: 90%; // El contenedor ocupa el 90% del ancho
+    padding: 20px; // Reducimos el relleno en pantallas más pequeñas
+  }
+
+  .login-title {
+    font-size: 2rem; // Reducimos el tamaño del título en pantallas pequeñas
+  }
+
+  .login-input {
+    font-size: 1.4rem; // Reducimos el tamaño de la fuente en los inputs
+    height: 50px; // Reducimos la altura de los inputs
+  }
+
+  .btn-primary {
+    font-size: 1.4rem; // Reducimos el tamaño del botón
+  }
+}
+
+// Media Query para pantallas de 425px a 768px (típicos de tabletas en modo retrato)
+@media (max-width: 425px) {
+  .login-container {
+    height: 100vh; // Aseguramos que la altura ocupe toda la pantalla
+  }
+
+  .login-content {
+    max-width: 90%; // El contenedor ocupa el 90% del ancho
+    padding: 15px; // Reducimos más el relleno para adaptarnos a pantallas más pequeñas
+  }
+
+  .login-input {
+    font-size: 1.3rem; // Reducimos un poco el tamaño de los inputs
+    height: 45px; // Reducimos más la altura de los inputs
+  }
+
+  .btn-primary {
+    font-size: 1.3rem; // Reducimos el tamaño del botón
+  }
+}
+
+// Media Query para pantallas de 375px a 768px (pantallas muy pequeñas como celulares)
+@media (max-width: 375px) {
+  .login-container {
+    height: 100vh; // Aseguramos que ocupe toda la pantalla
+  }
+
+  .login-content {
+    max-width: 85%; // Reducimos el ancho máximo al 85%
+    padding: 10px; // Reducimos el relleno aún más
+  }
+
+  .login-input {
+    font-size: 1.3rem; // Reducimos el tamaño de la fuente
+    height: 45px; // Ajustamos la altura de los inputs
+  }
+
+  .btn-primary {
+    font-size: 1.3rem; // Reducimos el tamaño del botón
+  }
+}
+
+// Media Query para pantallas de 320px a 768px (pantallas pequeñas como celulares compactos)
+@media (max-width: 320px) {
+  .login-container {
+    height: 100vh; // Aseguramos que ocupe toda la pantalla
+  }
+
+  .login-content {
+    max-width: 80%; // El contenedor ocupa el 80% del ancho
+    padding: 8px; // Reducimos al máximo el relleno para adaptarse mejor
+  }
+
+  .login-input {
+    font-size: 1.2rem; // Reducimos el tamaño de la fuente aún más
+    height: 40px; // Reducimos la altura de los inputs
+  }
+
+  .btn-primary {
+    font-size: 1.3rem; // Reducimos el tamaño del botón
+  }
+
+  .swal2-popup .custom-welcome {
+    background-color: #008080;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  // Estilos personalizados para la alerta de éxito
+  .custom-success-popup {
+    border-radius: 15px !important;
+    padding: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid #28a745 !important;
+  }
+
+  .custom-success-title {
+    font-size: 1.4rem !important;
+    font-weight: bold !important;
+    color: #28a745 !important;
+    margin-bottom: 15px !important;
+  }
+
+  .custom-success-content {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+  }
+
+  // Animación para la alerta de éxito
+  .custom-success-popup {
+    animation: successPulse 0.6s ease-out;
+  }
+
+  @keyframes successPulse {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+}

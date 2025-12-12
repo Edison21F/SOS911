@@ -13,3 +13,4 @@ const serviciosEmergenciaMongoSchema = new mongoose.Schema({
 const ServicioEmergencia = mongoose.model('ServicioEmergencia', serviciosEmergenciaMongoSchema);
 
 module.exports = ServicioEmergencia;
+

@@ -19,3 +19,4 @@ const notificaciones = (sequelize, type) => {
 };
 
 module.exports = notificaciones;
+

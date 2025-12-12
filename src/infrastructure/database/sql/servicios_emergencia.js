@@ -28,3 +28,4 @@ const serviciosEmergencia = (sequelize, type) => { // Cambiado DataTypes a type
 };
 
 module.exports = serviciosEmergencia;
+

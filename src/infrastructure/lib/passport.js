@@ -12,7 +12,7 @@ const sql = require('../database/connection/dataBase.sql'); // Tu conexión SQL 
 const mongo = require('../database/connection/dataBase.mongo'); // Tu conexión a MongoDB (Mongoose)
 
 // Importa las utilidades de cifrado/descifrado (asegúrate que tu encrypDates.js exporte estas funciones)
-const { cifrarDato, descifrarDato } = require('./encrypDates');
+const { cifrarDato, descifrarDato } = require(path.join(__dirname, '../../../src/application/controller/encrypDates'));
 
 // --- Función para guardar y subir archivos (fotos de perfil) ---
 // Esta función maneja el movimiento del archivo localmente y actualiza la base de datos SQL con el nombre del archivo.
@@ -290,3 +290,4 @@ passport.deserializeUser((user, done) => {
 
 // Exporta la configuración de passport para usarla en tu app principal
 module.exports = passport;
+

@@ -32,3 +32,4 @@ const dispositivos = (sequelize, type) => {
 }
 
 module.exports = dispositivos;
+

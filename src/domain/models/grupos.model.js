@@ -13,3 +13,4 @@ const gruposMongoSchema = new mongoose.Schema({
 const Grupo = mongoose.model('Grupo', gruposMongoSchema);
 
 module.exports = Grupo;
+

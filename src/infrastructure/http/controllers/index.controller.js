@@ -5,7 +5,7 @@ const FormData = require('form-data'); // Para manejar datos de formulario multi
 const fs = require('fs'); // Para operaciones de sistema de archivos
 const path = require('path'); // Para trabajar con rutas de archivos
 const axios = require('axios'); // Para hacer solicitudes HTTP a APIs externas
-const { cifrarDato, descifrarDato } = require('../../lib/encrypDates'); // Utilidades de cifrado/descifrado
+const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates'); // Utilidades de cifrado/descifrado
 const { validationResult } = require('express-validator'); // Para manejo de resultados de validación
 
 const indexCtl = {};
@@ -123,3 +123,4 @@ indexCtl.CerrarSesion = (req, res, next) => {
 };
 
 module.exports = indexCtl;
+

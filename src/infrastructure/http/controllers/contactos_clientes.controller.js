@@ -1,7 +1,7 @@
 // Importa los modelos y utilidades necesarias
 const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL) - Necesario para relaciones
 const sql = require('../../database/connection/dataBase.sql'); // MySQL directo
-const { cifrarDato, descifrarDato } = require('../../lib/encrypDates'); // Se mantiene por consistencia
+const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates'); // Se mantiene por consistencia
 
 const contactosClientesCtl = {};
 
@@ -416,3 +416,4 @@ contactosClientesCtl.deleteClientContact = async (req, res) => {
 };
 
 module.exports = contactosClientesCtl;
+

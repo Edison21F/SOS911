@@ -37,3 +37,4 @@ const cliente = (sequelize, type) => { // Cambiado DataTypes a type
 };
 
 module.exports = cliente;
+

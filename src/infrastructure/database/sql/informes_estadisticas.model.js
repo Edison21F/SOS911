@@ -22,3 +22,4 @@ const informesEstadisticas = (sequelize, type) => {
 };
 
 module.exports = informesEstadisticas;
+

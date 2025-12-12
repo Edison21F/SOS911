@@ -33,3 +33,4 @@ router.put('/actualizar/:id', updateUserRole);
 router.delete('/eliminar/:id', deleteUserRole);
 
 module.exports = router;
+

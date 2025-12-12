@@ -29,3 +29,4 @@ const usuario_numero = (sequelize, type) => {
 };
 
 module.exports = usuario_numero;
+

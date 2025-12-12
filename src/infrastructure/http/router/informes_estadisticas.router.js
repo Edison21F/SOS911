@@ -31,3 +31,4 @@ router.put('/actualizar/:id', updateReport);
 router.delete('/eliminar/:id', deleteReport);
 
 module.exports = router;
+

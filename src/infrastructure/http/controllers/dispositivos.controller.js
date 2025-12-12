@@ -1,7 +1,7 @@
 // Importa los modelos y utilidades necesarias
 const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL) - Necesario para la relación y el modelo
 const sql = require('../../database/connection/dataBase.sql'); // Para MySQL directo
-const { cifrarDato, descifrarDato } = require('../../lib/encrypDates');
+const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates');
 
 const dispositivosCtl = {};
 
@@ -312,3 +312,4 @@ dispositivosCtl.deleteDevice = async (req, res) => {
 };
 
 module.exports = dispositivosCtl;
+

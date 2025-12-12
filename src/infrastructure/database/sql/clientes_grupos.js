@@ -17,3 +17,4 @@ const clienteGrupo = (sequelize, type) => {
 };
  
 module.exports = clienteGrupo;
+

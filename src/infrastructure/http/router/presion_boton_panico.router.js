@@ -31,3 +31,4 @@ router.put('/actualizar/:id', updatePanicButtonPress);
 router.delete('/eliminar/:id', deletePanicButtonPress);
 
 module.exports = router;
+

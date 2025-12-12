@@ -28,3 +28,4 @@ helpers.comparePassword = async (password, hashedPassword) => {
 
 // Exporta el objeto helpers para que estas funciones puedan usarse en otros archivos
 module.exports = helpers;
+

@@ -24,3 +24,4 @@ const grupos = (sequelize, type) => {
 }
 
 module.exports = grupos;
+

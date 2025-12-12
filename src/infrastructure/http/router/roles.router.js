@@ -30,3 +30,4 @@ router.route('/eliminar/:id')
   .delete(deleteRol); // URL final: DELETE /roles/eliminar/123
 
 module.exports = router;
+

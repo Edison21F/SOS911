@@ -234,3 +234,4 @@ module.exports = {
     contenido_app,
     pagina,
 };
+

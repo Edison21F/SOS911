@@ -28,3 +28,4 @@ router.put('/actualizar', updateContent);
 router.patch('/cambiar-estado', changeStatus);
 
 module.exports = router;
+

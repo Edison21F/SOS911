@@ -33,3 +33,4 @@ router.put('/actualizar/:id', updateClientContact);
 router.delete('/eliminar/:id', deleteClientContact);
 
 module.exports = router;
+

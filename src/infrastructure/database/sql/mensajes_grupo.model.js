@@ -25,3 +25,4 @@ const mensajesGrupo = (sequelize, type) => {
 };
 
 module.exports = mensajesGrupo;
+

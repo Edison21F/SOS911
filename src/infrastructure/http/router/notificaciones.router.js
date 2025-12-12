@@ -31,3 +31,4 @@ router.put('/actualizar/:id', updateNotification);
 router.delete('/eliminar/:id', deleteNotification);
 
 module.exports = router;
+

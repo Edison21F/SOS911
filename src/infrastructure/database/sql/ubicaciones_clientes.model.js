@@ -22,3 +22,4 @@ const ubicacion_clientes = (sequelize, type) => {
 }
 
 module.exports = ubicacion_clientes;
+

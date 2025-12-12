@@ -37,3 +37,4 @@ const usuario = (sequelize, type) => { // Cambiado DataTypes a type
 
 // Exporta el modelo para que pueda ser utilizado por Sequelize
 module.exports = usuario;
+

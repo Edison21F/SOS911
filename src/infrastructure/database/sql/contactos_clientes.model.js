@@ -17,3 +17,4 @@ const contactosClientes = (sequelize, type) => {
 };
 
 module.exports = contactosClientes;
+

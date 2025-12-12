@@ -27,3 +27,4 @@ router.put('/actualizar/:id', updateGroupMessage);
 router.delete('/eliminar/:id', deleteGroupMessage);
 
 module.exports = router;
+

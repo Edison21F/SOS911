@@ -18,3 +18,4 @@ const presionesBotonPanico = (sequelize, type) => {
 }
 
 module.exports = presionesBotonPanico;
+

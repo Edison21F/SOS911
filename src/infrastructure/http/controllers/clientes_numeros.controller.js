@@ -1,7 +1,7 @@
 // Importa los modelos de ambas bases de datos (ORM y SQL directo) y las utilidades
 const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL) - Necesario para la relación y el modelo
 const sql = require('../../database/connection/dataBase.sql'); // MySQL directo
-const { cifrarDato, descifrarDato } = require('../../lib/encrypDates'); // Utilidades de cifrado/descifrado
+const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates'); // Utilidades de cifrado/descifrado
 
 const clientesNumerosCtl = {};
 
@@ -327,3 +327,4 @@ clientesNumerosCtl.getNumbersByClientId = async (req, res) => {
 };
 
 module.exports = clientesNumerosCtl;
+

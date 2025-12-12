@@ -19,3 +19,4 @@ const evaluacionesSituaciones = (sequelize, type) => {
 }
 
 module.exports = evaluacionesSituaciones;
+

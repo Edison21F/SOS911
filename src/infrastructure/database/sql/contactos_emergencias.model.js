@@ -20,3 +20,4 @@ const contactosEmergencias = (sequelize, type) => {
 };
 
 module.exports = contactosEmergencias;
+

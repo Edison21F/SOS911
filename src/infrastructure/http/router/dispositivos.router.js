@@ -31,3 +31,4 @@ router.put('/actualizar/:id', updateDevice);
 router.delete('/eliminar/:id', deleteDevice);
 
 module.exports = router;
+

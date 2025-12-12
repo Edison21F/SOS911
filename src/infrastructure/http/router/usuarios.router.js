@@ -66,3 +66,4 @@ router.delete('/preferencias/eliminar/:id', deletePreferences);
 
 
 module.exports = router;
+

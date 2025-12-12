@@ -3,7 +3,7 @@ const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize
 const sql = require('../../database/connection/dataBase.sql'); // MySQL directo
 const mongo = require('../../database/connection/dataBase.mongo'); // Para Mongoose (MongoDB)
 
-const { cifrarDato, descifrarDato } = require('../../lib/encrypDates'); // Se mantiene por consistencia
+const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates'); // Se mantiene por consistencia
 
 const contenidoAppCtl = {};
 
@@ -310,3 +310,4 @@ contenidoAppCtl.changeStatus = async (req, res) => {
 };
 
 module.exports = contenidoAppCtl;
+

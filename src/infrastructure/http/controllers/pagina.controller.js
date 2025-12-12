@@ -2,7 +2,7 @@
 const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL)
 const sql = require('../../database/connection/dataBase.sql'); // MySQL directo
 const mongo = require('../../database/connection/dataBase.mongo'); // Para Mongoose (MongoDB)
-const { cifrarDato, descifrarDato } = require('../../lib/encrypDates'); // Asumiendo que usas cifrado para algunos campos
+const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates'); // Asumiendo que usas cifrado para algunos campos
 
 const paginaCtl = {};
 
@@ -297,3 +297,4 @@ paginaCtl.deletePagina = async (req, res) => {
 };
 
 module.exports = paginaCtl;
+

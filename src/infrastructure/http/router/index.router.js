@@ -13,3 +13,4 @@ router.post('/Register', registro)
 router.get('/closeSection', CerrarSesion)
 
 module.exports = router
+

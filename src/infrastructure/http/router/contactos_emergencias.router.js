@@ -41,3 +41,4 @@ router.put('/actualizar/:id', updateEmergencyContact);
 router.delete('/eliminar/:id', deleteEmergencyContact);
 
 module.exports = router;
+

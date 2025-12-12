@@ -18,3 +18,4 @@ const preferencias = (sequelize, type) => {
 };
 
 module.exports = preferencias;
+

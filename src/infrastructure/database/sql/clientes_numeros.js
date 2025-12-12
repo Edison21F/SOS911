@@ -24,3 +24,4 @@ const clienteNumero = (sequelize, type) => {
 };
 
 module.exports = clienteNumero;
+

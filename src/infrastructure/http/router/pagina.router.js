@@ -36,3 +36,4 @@ router.put('/actualizar/:id', updatePagina);
 router.delete('/eliminar/:id', deletePagina);
 
 module.exports = router;
+

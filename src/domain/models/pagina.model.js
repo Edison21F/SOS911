@@ -17,3 +17,4 @@ const ContenidoPaginaSchema = new mongoose.Schema({
 const ContenidoPagina = mongoose.model('ContenidoPagina', ContenidoPaginaSchema);
 
 module.exports = ContenidoPagina;
+

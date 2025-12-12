@@ -31,3 +31,4 @@ router.put('/actualizar/:id', updateGroup);
 router.delete('/eliminar/:id', deleteGroup);
 
 module.exports = router;
+

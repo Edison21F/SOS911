@@ -34,3 +34,4 @@ router.put('/actualizar/:id', updateClientLocation);
 router.delete('/eliminar/:id', deleteClientLocation);
 
 module.exports = router;
+

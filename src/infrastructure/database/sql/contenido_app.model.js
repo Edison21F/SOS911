@@ -22,3 +22,4 @@ const contenidoApp = (sequelize, type) => {
 };
 
 module.exports = contenidoApp;
+

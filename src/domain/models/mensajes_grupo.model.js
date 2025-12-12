@@ -16,3 +16,4 @@ const mensajesGrupoMongoSchema = new mongoose.Schema({
 const MensajeGrupo = mongoose.model('MensajeGrupo', mensajesGrupoMongoSchema);
 
 module.exports = MensajeGrupo;
+

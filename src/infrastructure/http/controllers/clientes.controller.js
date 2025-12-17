@@ -30,7 +30,7 @@ function formatLocalDateTime(date) {
 
 // Utilidad para obtener el logger (manteniendo lo que ya tenías)
 function getLogger(req) {
-  return req.app && req.app.get ? req.app.get('logger') : console;
+    return req.app && req.app.get ? req.app.get('logger') : console;
 }
 
 // --- CRUD de Clientes ---
@@ -39,7 +39,7 @@ function getLogger(req) {
 clientesCtl.createClient = async (req, res) => {
     const logger = getLogger(req);
     const { nombre, correo_electronico, cedula_identidad, contrasena, fecha_nacimiento, direccion, deviceId, tipo_dispositivo, modelo_dispositivo } = req.body;
-    
+
     logger.info(`[CLIENTE] Solicitud de creación de cliente: correo=${correo_electronico}, nombre=${nombre}`);
 
     try {
@@ -49,7 +49,7 @@ clientesCtl.createClient = async (req, res) => {
             return res.status(400).json({ message: 'Todos los campos obligatorios son requeridos (nombre, correo_electronico, cedula_identidad, contrasena, direccion).' });
         }
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -92,9 +92,9 @@ clientesCtl.createClient = async (req, res) => {
 
         // Crear documento en la base de datos MongoDB
         // fecha_creacion se establece, fecha_modificacion no se incluye en la creación inicial
-        const nuevoClienteMongo = { 
-            idClienteSql, 
-            fecha_nacimiento, 
+        const nuevoClienteMongo = {
+            idClienteSql,
+            fecha_nacimiento,
             direccion: cifrarDato(direccion), // Cifrar dirección en Mongo
             estado: 'activo', // Estado por defecto
             fecha_creacion: formattedNow // Se añade la fecha de creación para Mongo (hora local formateada)
@@ -105,7 +105,7 @@ clientesCtl.createClient = async (req, res) => {
         // Registrar dispositivo si se envía
         if (deviceId && tipo_dispositivo && modelo_dispositivo) {
             logger.info(`[DISPOSITIVO] Registrando dispositivo para nuevo cliente: ${idClienteSql}, deviceId=${deviceId}`);
-            
+
             // Desactivar cualquier dispositivo existente con el mismo deviceId (sin importar el cliente_id)
             const [todosDispositivosSQL] = await sql.promise().query("SELECT id, token_dispositivo, clienteId FROM dispositivos WHERE estado = 'activo'");
             for (const disp of todosDispositivosSQL) {
@@ -134,7 +134,7 @@ clientesCtl.createClient = async (req, res) => {
             logger.info(`[DISPOSITIVO] Dispositivo registrado exitosamente para cliente ${idClienteSql}.`);
         }
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'Cliente registrado exitosamente.',
             clienteId: idClienteSql
         });
@@ -154,12 +154,12 @@ clientesCtl.getAllClients = async (req, res) => {
     try {
         const estadoQuery = incluirEliminados === 'true' ? "" : " WHERE estado = 'activo'";
         const [clientesSQL] = await sql.promise().query(`SELECT * FROM clientes${estadoQuery}`);
-        
+
         const clientesCompletos = await Promise.all(
             clientesSQL.map(async (clienteSQL) => {
                 let clienteMongo = null;
                 // SOLO si se encuentra un cliente en SQL, intentamos buscar en Mongo
-                if (clienteSQL) { 
+                if (clienteSQL) {
                     clienteMongo = await mongo.Cliente.findOne({ idClienteSql: clienteSQL.id });
                 }
                 return {
@@ -191,17 +191,17 @@ clientesCtl.getClientById = async (req, res) => {
     const logger = getLogger(req);
     // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
     // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
-    const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id; 
+    const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
     logger.info(`[CLIENTE] Solicitud de obtención de cliente por ID: ${idCliente}`);
 
     try {
         const [clientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE id = ? AND estado = 'activo'", [idCliente]);
-        
+
         if (clientesSQL.length === 0) {
             logger.warn(`[CLIENTE] Cliente no encontrado o eliminado con ID: ${idCliente}`);
             return res.status(404).json({ error: 'Cliente no encontrado o eliminado.' });
         }
-        
+
         const clienteSQL = clientesSQL[0];
         logger.info(`[CLIENTE] Cliente SQL encontrado con ID: ${idCliente}`);
 
@@ -224,7 +224,9 @@ clientesCtl.getClientById = async (req, res) => {
             fecha_creacion_sql: clienteSQL.fecha_creacion,
             fecha_modificacion_sql: clienteSQL.fecha_modificacion,
             fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
+            fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
             fecha_modificacion_mongo: clienteMongo?.fecha_modificacion || null,
+            foto_perfil: clienteSQL.foto_perfil // Return profile picture filename
         };
         res.status(200).json(clienteCompleto);
     } catch (error) {
@@ -238,7 +240,7 @@ clientesCtl.updateClient = async (req, res) => {
     const logger = getLogger(req);
     // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
     // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
-    const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id; 
+    const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
     const { nombre, correo_electronico, cedula_identidad, contrasena, fecha_nacimiento, direccion, estado, numero_ayudas } = req.body;
     logger.info(`[CLIENTE] Solicitud de actualización de cliente con ID: ${idCliente}`);
 
@@ -251,7 +253,7 @@ clientesCtl.updateClient = async (req, res) => {
         }
         const clienteSQL = clientesSQL[0];
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -262,7 +264,7 @@ clientesCtl.updateClient = async (req, res) => {
         // Preparar datos para SQL (solo los que no son undefined)
         const camposSQL = [];
         const valoresSQL = [];
-        
+
         if (nombre !== undefined) {
             camposSQL.push('nombre = ?');
             valoresSQL.push(cifrarDato(nombre));
@@ -291,7 +293,7 @@ clientesCtl.updateClient = async (req, res) => {
             camposSQL.push('contrasena_hash = ?');
             valoresSQL.push(cifrarDato(contrasena)); // Cifrado de contraseña con cifrarDato
         }
-        
+
         // Si el correo se actualiza, verificar y actualizar el correo_electronico cifrado
         if (correo_electronico !== undefined) {
             // **Validación de unicidad para correo_electronico en actualización**
@@ -315,7 +317,7 @@ clientesCtl.updateClient = async (req, res) => {
             valoresSQL.push(idCliente); // Para el WHERE
             const consultaSQL = `UPDATE clientes SET ${camposSQL.join(', ')} WHERE id = ?`;
             const [resultadoSQLUpdate] = await sql.promise().query(consultaSQL, valoresSQL);
-            
+
             if (resultadoSQLUpdate.affectedRows === 0) {
                 logger.warn(`[CLIENTE] No se pudo actualizar el cliente SQL con ID: ${idCliente}.`);
             } else {
@@ -338,13 +340,13 @@ clientesCtl.updateClient = async (req, res) => {
             await mongo.Cliente.updateOne({ idClienteSql: idCliente }, { $set: updateDataMongo });
             logger.info(`[CLIENTE] Cliente Mongo actualizado para ID SQL: ${idCliente}`);
         }
-        
+
         // Obtener el cliente actualizado para la respuesta (usando SQL directo y Mongo)
         const [updatedClientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE id = ?", [idCliente]);
         const updatedClienteSQL = updatedClientesSQL[0];
         const updatedClienteMongo = await mongo.Cliente.findOne({ idClienteSql: idCliente });
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Cliente actualizado correctamente.',
             cliente: {
                 id: updatedClienteSQL.id,
@@ -369,17 +371,17 @@ clientesCtl.deleteClient = async (req, res) => {
     const logger = getLogger(req);
     // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
     // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
-    const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id; 
+    const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
     logger.info(`[CLIENTE] Solicitud de eliminación lógica de cliente con ID: ${idCliente}`);
 
     try {
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
         // SQL directo para actualizar estado a 'eliminado'
         const [resultadoSQL] = await sql.promise().query("UPDATE clientes SET estado = 'eliminado', fecha_modificacion = ? WHERE id = ? AND estado = 'activo'", [formattedNow, idCliente]);
-        
+
         if (resultadoSQL.affectedRows === 0) {
             logger.warn(`[CLIENTE] Cliente no encontrado o ya eliminado con ID: ${idCliente}`);
             return res.status(404).json({ error: 'Cliente no encontrado o ya estaba eliminado.' });
@@ -388,11 +390,11 @@ clientesCtl.deleteClient = async (req, res) => {
 
         // Actualizar estado a 'eliminado' en MongoDB
         await mongo.Cliente.updateOne(
-            { idClienteSql: idCliente }, 
+            { idClienteSql: idCliente },
             { $set: { estado: 'eliminado', fecha_modificacion: formattedNow } }
         );
         logger.info(`[CLIENTE] Cliente Mongo marcado como eliminado para ID SQL: ${idCliente}`);
-        
+
         res.status(200).json({ message: 'Cliente marcado como eliminado exitosamente.' });
     } catch (error) {
         logger.error('Error al eliminar el cliente:', error);
@@ -430,14 +432,14 @@ clientesCtl.loginClient = async (req, res) => {
         }
         logger.info(`[CLIENTE] Contraseña verificada para cliente ID: ${clienteSQL.id}.`);
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
         // Lógica de registro/actualización de dispositivo (adaptada de tu código original y usando SQL directo)
         if (deviceId && tipo_dispositivo && modelo_dispositivo) {
             logger.info(`[DISPOSITIVO] Gestionando dispositivo para cliente ${clienteSQL.id} durante el login.`);
-            
+
             let dispositivoDelCliente = null;
             let dispositivoDeOtroClienteActivo = null;
 
@@ -492,9 +494,9 @@ clientesCtl.loginClient = async (req, res) => {
         req.session.tipoUsuario = 'cliente';
         logger.info(`[CLIENTE] Sesión establecida para cliente ID: ${clienteSQL.id}.`);
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Inicio de sesión exitoso', 
+        res.status(200).json({
+            success: true,
+            message: 'Inicio de sesión exitoso',
             user: {
                 id: clienteSQL.id,
                 nombre: safeDecrypt(clienteSQL.nombre),
@@ -559,14 +561,14 @@ clientesCtl.deviceLoginHandler = async (req, res) => {
         req.session.tipoUsuario = 'cliente';
         logger.info(`[CLIENTE] Sesión establecida para device-login de cliente ID: ${clienteSQL.id}.`);
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Device login exitoso', 
-            user: { 
-                id: clienteSQL.id, 
-                nombre: safeDecrypt(clienteSQL.nombre), 
-                email: safeDecrypt(clienteSQL.correo_electronico) 
-            } 
+        res.status(200).json({
+            success: true,
+            message: 'Device login exitoso',
+            user: {
+                id: clienteSQL.id,
+                nombre: safeDecrypt(clienteSQL.nombre),
+                email: safeDecrypt(clienteSQL.correo_electronico)
+            }
         });
 
     } catch (error) {
@@ -575,5 +577,57 @@ clientesCtl.deviceLoginHandler = async (req, res) => {
     }
 };
 
-module.exports = clientesCtl;
+// 8. SUBIR FOTO DE PERFIL
+clientesCtl.uploadProfilePicture = async (req, res) => {
+    const logger = getLogger(req);
+    const { id } = req.params;
+    logger.info(`[CLIENTE] Solicitud de subida de foto de perfil para cliente ID: ${id}`);
+
+    try {
+        if (!req.file) {
+            logger.warn('[CLIENTE] Subida fallida: No se proporcionó ningún archivo.');
+            return res.status(400).json({ message: 'No se subió ningún archivo.' });
+        }
+
+        const filename = req.file.filename;
+        const now = new Date();
+        const formattedNow = formatLocalDateTime(now);
+
+        // Actualizar el campo foto_perfil en SQL
+        const [resultSQL] = await sql.promise().query(
+            "UPDATE clientes SET foto_perfil = ?, fecha_modificacion = ? WHERE id = ?",
+            [filename, formattedNow, id]
+        );
+
+        if (resultSQL.affectedRows === 0) {
+            logger.warn(`[CLIENTE] No se encontró cliente activo para actualizar foto ID: ${id}`);
+            // Opcional: Borrar el archivo si no se pudo vincular
+            // fs.unlink...
+            return res.status(404).json({ message: 'Cliente no encontrado.' });
+        }
+
+        // También actualizar en Mongo si es necesario (opcional para mantener sincronía)
+        // ...
+
+        logger.info(`[CLIENTE] Foto de perfil actualizada para cliente ID: ${id}, archivo: ${filename}`);
+
+        // Construir URL completa si es necesario, o devolver solo el filename
+        const fileUrl = `/uploads/profiles/${filename}`;
+
+        res.status(200).json({
+            message: 'Foto de perfil actualizada correctamente.',
+            foto_perfil: filename,
+            fileUrl: fileUrl
+        });
+
+    } catch (error) {
+        logger.error('Error al subir foto de perfil:', error);
+        res.status(500).json({ error: 'Error interno al subir la imagen.' });
+    }
+};
+
+module.exports = {
+    ...clientesCtl,
+    uploadProfilePicture: clientesCtl.uploadProfilePicture
+};
 

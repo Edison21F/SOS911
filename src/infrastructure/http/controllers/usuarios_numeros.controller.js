@@ -34,10 +34,10 @@ function getLogger(req) {
 // 1. CREAR UN NUEVO NÚMERO DE USUARIO (POST /usuarios_numeros/crear)
 usuarioNumeroCtl.createUserNumber = async (req, res) => {
     const logger = getLogger(req);
-    let { nombre, numero, usuarioId } = req.body; 
+    let { nombre, numero, usuarioId } = req.body;
     logger.info(`[USUARIOS_NUMEROS] Intento de registro: nombre=${nombre}, numero=${numero}, usuarioId=${usuarioId}`);
 
-    if (!nombre || !numero || !usuarioId) { 
+    if (!nombre || !numero || !usuarioId) {
         logger.warn('[USUARIOS_NUMEROS] Registro fallido: campos obligatorios faltantes');
         return res.status(400).json({ message: 'Faltan campos obligatorios: nombre, numero y usuarioId.' });
     }
@@ -54,7 +54,7 @@ usuarioNumeroCtl.createUserNumber = async (req, res) => {
             return res.status(400).json({ message: 'El usuario asociado no existe o no está activo.' });
         }
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -108,7 +108,7 @@ usuarioNumeroCtl.getAllUserNumbers = async (req, res) => {
                             usuarios_numeros un
                         JOIN 
                             usuarios u ON un.usuarioId = u.id`;
-        
+
         const params = [];
         if (!incluirEliminados) {
             querySQL += ` WHERE un.estado = 'activo'`;
@@ -116,7 +116,7 @@ usuarioNumeroCtl.getAllUserNumbers = async (req, res) => {
         querySQL += ` ORDER BY un.fecha_creacion DESC`; // Ordenar para consistencia
 
         const [usuariosNumerosSQL] = await sql.promise().query(querySQL, params);
-        
+
         const usuariosNumerosCompletos = usuariosNumerosSQL.map(numSQL => ({
             id: numSQL.id,
             nombre: safeDecrypt(numSQL.nombre),
@@ -159,7 +159,7 @@ usuarioNumeroCtl.getUserNumberById = async (req, res) => {
             JOIN 
                 usuarios u ON un.usuarioId = u.id 
             WHERE 
-                un.id = ? AND un.estado = 'activo'`, 
+                un.id = ? AND un.estado = 'activo'`,
             [id]
         );
 
@@ -167,7 +167,7 @@ usuarioNumeroCtl.getUserNumberById = async (req, res) => {
             logger.warn(`[USUARIOS_NUMEROS] Usuario_numero no encontrado: id=${id}`);
             return res.status(404).json({ error: 'Número de usuario no encontrado o inactivo.' });
         }
-        
+
         const numSQL = usuarioNumeroSQL[0];
         const usuarioNumeroCompleto = {
             id: numSQL.id,
@@ -203,7 +203,7 @@ usuarioNumeroCtl.updateUserNumber = async (req, res) => {
             return res.status(404).json({ error: 'Número de usuario no encontrado o inactivo.' });
         }
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -276,13 +276,13 @@ usuarioNumeroCtl.deleteUserNumber = async (req, res) => {
             return res.status(404).json({ error: 'Número de usuario no encontrado o ya eliminado.' });
         }
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
         // Marcar como eliminado en SQL directo
         const [resultado] = await sql.promise().query("UPDATE usuarios_numeros SET estado = 'eliminado', fecha_modificacion = ? WHERE id = ?", [formattedNow, id]);
-        
+
         if (resultado.affectedRows === 0) {
             logger.error(`[USUARIOS_NUMEROS] No se pudo marcar como eliminado el usuario_numero: id=${id}`);
             return res.status(500).json({ error: 'No se pudo eliminar el número de usuario.' });
@@ -293,6 +293,54 @@ usuarioNumeroCtl.deleteUserNumber = async (req, res) => {
     } catch (error) {
         logger.error(`[USUARIOS_NUMEROS] Error al borrar el número de usuario: ${error.message}`);
         res.status(500).json({ error: 'Error al borrar el número de usuario' });
+    }
+};
+
+// 6. OBTENER NÚMEROS DE UN USUARIO (GET /usuarios_numeros/usuario/:usuarioId)
+usuarioNumeroCtl.getNumbersByUser = async (req, res) => {
+    const logger = getLogger(req);
+    const { usuarioId } = req.params;
+    const incluirEliminados = req.query.incluirEliminados === 'true';
+    logger.info(`[USUARIOS_NUMEROS] Solicitud de números para usuarioId=${usuarioId} (incluirEliminados: ${incluirEliminados})`);
+
+    try {
+        let querySQL = `SELECT 
+                            un.id, 
+                            un.nombre, 
+                            un.numero, 
+                            un.estado, 
+                            un.usuarioId, 
+                            un.fecha_creacion,
+                            un.fecha_modificacion
+                        FROM 
+                            usuarios_numeros un`;
+
+        const params = [];
+        const conditions = ['un.usuarioId = ?'];
+        params.push(usuarioId);
+
+        if (!incluirEliminados) {
+            conditions.push("un.estado = 'activo'");
+        }
+
+        querySQL += ` WHERE ${conditions.join(' AND ')} ORDER BY un.fecha_creacion ASC`;
+
+        const [usuariosNumerosSQL] = await sql.promise().query(querySQL, params);
+
+        const usuariosNumerosCompletos = usuariosNumerosSQL.map(numSQL => ({
+            id: numSQL.id,
+            nombre: safeDecrypt(numSQL.nombre),
+            numero: safeDecrypt(numSQL.numero),
+            estado: numSQL.estado,
+            usuarioId: numSQL.usuarioId,
+            fecha_creacion: numSQL.fecha_creacion,
+            fecha_modificacion: numSQL.fecha_modificacion
+        }));
+
+        res.status(200).json(usuariosNumerosCompletos);
+    } catch (error) {
+        logger.error(`[USUARIOS_NUMEROS] Error al obtener números del usuario: ${error.message}`);
+        res.status(500).json({ error: 'Error al obtener números del usuario' });
     }
 };
 

@@ -28,8 +28,11 @@ require('../src/infrastructure/lib/passport');
 // Crear aplicación Express
 const app = express();
 
+// 0. Archivos estáticos (para acceder a las imágenes de perfil)
+app.use(express.static(path.join(__dirname, '../public')));
+
 // ==================== CONFIGURACIÓN BÁSICA ====================
-app.set('port', process.env.PORT || 3000); // Usar tu puerto 4000 como predeterminado
+app.set('port', process.env.PORT || 4000); // Usar tu puerto 4000 como predeterminado 
 
 // ==================== CONFIGURACIÓN CORREGIDA ====================
 
@@ -44,8 +47,11 @@ const allowedOrigins = [
   'http://192.168.100.225:4000',
   'http://192.168.100.225:8081',
   'https://backsos911-production.up.railway.app',
-  '192.168.40.81:300',
-  '0,0,0,0:300',
+  '192.168.40.81:3000',
+  'exp://192.168.100.225:8081',
+  '0,0,0,0:3000',
+  //admitir todos los origenes
+  '*',
   ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
 ];
 app.use(cors({
@@ -99,11 +105,11 @@ const logger = winston.createLogger({
       filename: path.join(logDir, 'combined.log'), // <-- Aquí se define 'combined.log'
       level: 'http', // Nivel para el archivo
       maxsize: 5242880 * 5, // 25MB
-      maxFiles: 3,
-      tailable: true
+      maxFiles: 3 
     }),
     ...(process.env.NODE_ENV !== 'production'
       ? [new winston.transports.Console({
+        level: 'info', // Show only info, warn, error in console
         format: winston.format.combine(
           winston.format.colorize(),
           winston.format.simple()
@@ -127,7 +133,8 @@ app.use(morgan(morganFormat, {
     write: (message) => {
       // Eliminar saltos de línea innecesarios
       const cleanedMessage = message.replace(/\n$/, '');
-      logger.info(cleanedMessage);
+      // Use 'http' level so it doesn't show in Console (level='info') but shows in File (level='http')
+      logger.http(cleanedMessage);
     }
   }
 }));
@@ -230,19 +237,50 @@ app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 // Configurar middleware de subida de archivos (MOVIDO AQUÍ, ANTES DE CSRF)
-app.use(fileUpload({
+// Configurar middleware de subida de archivos (MOVIDO AQUÍ, ANTES DE CSRF)
+// EXCLUIR rutas que usan Multer para evitar conflictos (Unexpected end of form)
+const fileUploadMiddleware = fileUpload({
   createParentPath: true,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   abortOnLimit: true,
   safeFileNames: true,
   preserveExtension: true
-}));
+});
 
-//  Inicializar CSRF protection ANTES de la ruta /csrf-token
+app.use((req, res, next) => {
+  // Si la ruta es la de subir perfil con Multer, saltamos express-fileupload
+  if (req.path.includes('/clientes/upload-profile')) {
+    return next();
+  }
+  fileUploadMiddleware(req, res, next);
+});
+
 //  Inicializar CSRF protection ANTES de la ruta /csrf-token
 //  Usamos la sesión para almacenar el secreto (más seguro y simple ya que tenemos express-session)
 const csrfProtection = csrf(); // Sin argumentos usa req.session por defecto
-app.use(csrfProtection); // Aplicar globalmente
+
+// Middleware condicional para CSRF
+const conditionalCsrf = (req, res, next) => {
+  // Lista de rutas a excluir (API Móvil)
+  const excludedPaths = [
+    '/clientes',
+    '/contactos', // cubre contactos_clientes y contactos_emergencias
+    '/alertas',
+    '/ubicaciones',
+    '/dispositivos',
+    '/usuarios'
+  ];
+
+  const shouldExclude = excludedPaths.some(path => req.path.startsWith(path));
+
+  if (shouldExclude) {
+    return next();
+  }
+
+  csrfProtection(req, res, next);
+};
+
+app.use(conditionalCsrf); // Aplicar condicionalmente
 
 //  Ahora sí la ruta /csrf-token tendrá acceso a req.csrfToken()
 app.get('/csrf-token', (req, res) => {
@@ -347,6 +385,8 @@ app.use('/clientes_numeros', require('../src/infrastructure/http/router/clientes
 app.use('/clientes_grupos', require('../src/infrastructure/http/router/clientes_grupos.router'));
 app.use('/servicios_emergencia', require('../src/infrastructure/http/router/servicios_emergencia.router'));
 app.use('/contenido_app', require('../src/infrastructure/http/router/contenido_app.router'));
+app.use('/alertas', require('../src/infrastructure/http/router/alertas.router'));
+app.use('/contactos_emergencia_v2', require('../src/infrastructure/http/router/contactos_emergencia.router'));
 
 
 // ==================== MANEJO DE ERRORES ====================

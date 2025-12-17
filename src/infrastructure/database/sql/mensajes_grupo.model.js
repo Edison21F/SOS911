@@ -10,7 +10,7 @@ const mensajesGrupo = (sequelize, type) => {
         mongoMessageId: { // Campo para almacenar el _id del documento de mensaje en MongoDB
             type: type.STRING, // El _id de MongoDB es un string
             allowNull: false,
-            unique: true, // Asegura que cada registro SQL apunte a un único mensaje de Mongo
+            // unique: true, // COMENTADO TEMPORALMENTE: Causa error 'Too many keys' en sync con alter: true
             comment: 'ID del documento de mensaje correspondiente en MongoDB'
         },
         tipo_mensaje: type.STRING, // Cambiado a tipo STRING

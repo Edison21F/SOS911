@@ -5,12 +5,15 @@ const router = express.Router();
 // Importa las funciones directamente del controlador
 // Asegúrate de que los nombres coincidan exactamente con lo que se exporta en el controlador
 const {
-  createEmergencyContact,  
-  getAllEmergencyContacts,  
-  getEmergencyContactById, 
-  updateEmergencyContact,   
-  deleteEmergencyContact,  
-  getContactsByClient       
+  createEmergencyContact,
+  getAllEmergencyContacts,
+  getEmergencyContactById,
+  updateEmergencyContact,
+  deleteEmergencyContact,
+  getContactsByClient,
+  requestContact,
+  respondToRequest,
+  getPendingRequests
 } = require('../controllers/contactos_emergencias.controller');
 
 // --- Rutas con Nombres de Acción Explícitos ---
@@ -18,6 +21,18 @@ const {
 // Ruta para crear un nuevo contacto de emergencia
 // URL final: POST /contactos_emergencias/crear
 router.post('/crear', createEmergencyContact);
+
+// NUEVO: Solicitar vinculación (Search & Link)
+// URL final: POST /contactos_emergencias/solicitar
+router.post('/solicitar', requestContact);
+
+// NUEVO: Responder solicitud (Aceptar/Rechazar)
+// URL final: PATCH /contactos_emergencias/responder
+router.patch('/responder', respondToRequest);
+
+// NUEVO: Ver solicitudes pendientes (para mí)
+// URL final: GET /contactos_emergencias/solicitudes/:idUsuarioSql
+router.get('/solicitudes/:idUsuarioSql', getPendingRequests);
 
 // Ruta para listar todos los contactos de emergencia
 // URL final: GET /contactos_emergencias/listar

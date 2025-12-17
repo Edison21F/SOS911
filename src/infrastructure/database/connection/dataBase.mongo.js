@@ -61,6 +61,7 @@ const Grupo = require('../../../domain/models/grupos.model');
 const Preferencias = require('../../../domain/models/preferencias.model');
 const ContenidoPagina = require('../../../domain/models/pagina.model');
 const MensajeGrupo = require('../../../domain/models/mensajes_grupo.model');
+const Ubicacion = require('../../../domain/models/ubicaciones_mongo.model'); // Nuevo modelo
 
 module.exports = {
     Usuario,
@@ -71,5 +72,6 @@ module.exports = {
     Preferencias,
     ContenidoPagina,
     MensajeGrupo,
+    Ubicacion, // Exportarlo para usar en controladores
 };
 

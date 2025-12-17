@@ -12,6 +12,11 @@ const pool = createPool({
     host: MYSQLHOST,
     port: MYSQLPORT,
     database: MYSQLDATABASE,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    // enableKeepAlive: true, // Disabled to prevent ECONNRESET on some servers
+    // keepAliveInitialDelay: 0,
 });
 
 pool.getConnection((err, connection) => {

@@ -12,7 +12,7 @@ if (MYSQL_URI) {
         },
         pool: {
             max: 20,
-            min: 5,
+            min: 0,
             acquire: 30000,
             idle: 10000
         },
@@ -29,7 +29,7 @@ if (MYSQL_URI) {
         },
         pool: {
             max: 20,
-            min: 5,
+            min: 0,
             acquire: 30000,
             idle: 10000
         },
@@ -47,7 +47,7 @@ sequelize.authenticate()
     });
 
 // Sincronización Segura de la Base de Datos
-const syncOptions = process.env.NODE_ENV === 'development' ? { force: true } : { alter: true };
+const syncOptions = { alter: true }; // Always use alter to prevent data loss (force: true drops tables)
 
 sequelize.sync(syncOptions)
     .then(() => {
@@ -55,6 +55,9 @@ sequelize.sync(syncOptions)
     })
     .catch((error) => {
         console.error('❌ Error al sincronizar la Base de Datos:', error);
+        if (error.sql) {
+            console.error('❌ SQL que falló:', error.sql);
+        }
     });
 
 // --- Extracción de Modelos ---

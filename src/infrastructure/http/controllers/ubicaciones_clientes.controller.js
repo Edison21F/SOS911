@@ -1,6 +1,7 @@
 // Importa los modelos y utilidades necesarias
 const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL) - Necesario para relaciones
 const sql = require('../../database/connection/dataBase.sql'); // MySQL directo
+const mongo = require('../../database/connection/dataBase.mongo'); // Para Mongoose (MongoDB) - NUEVO
 const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates'); // Se mantiene por consistencia
 
 const ubicacionClienteCtl = {};
@@ -35,7 +36,7 @@ function getLogger(req) {
 ubicacionClienteCtl.createClientLocation = async (req, res) => {
     const logger = getLogger(req);
     // Usamos clienteId para que coincida con la columna de la DB (camelCase generada por Sequelize)
-    const { clienteId, latitud, longitud, marca_tiempo, estado } = req.body; 
+    const { clienteId, latitud, longitud, marca_tiempo, estado } = req.body;
     logger.info(`[UBICACIONES_CLIENTES] Solicitud de creación: clienteId=${clienteId}, latitud=${latitud}, longitud=${longitud}`);
 
     // Validar campos obligatorios
@@ -45,7 +46,7 @@ ubicacionClienteCtl.createClientLocation = async (req, res) => {
     }
 
     try {
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -70,6 +71,28 @@ ubicacionClienteCtl.createClientLocation = async (req, res) => {
         const newLocationId = ubicacionGuardadaSQL.id; // Obtener el ID insertado por ORM
         logger.info(`[UBICACIONES_CLIENTES] Ubicación creada exitosamente con ID: ${newLocationId} usando ORM.`);
 
+        // --- SINCRONIZACIÓN MONGO (Geospatial) ---
+        // Guardar o actualizar la ubicación en MongoDB para búsquedas rápidas "cerca de"
+        try {
+            await mongo.Ubicacion.findOneAndUpdate(
+                { idClienteSql: clienteId }, // Buscar por ID de SQL
+                {
+                    idClienteSql: clienteId,
+                    location: {
+                        type: 'Point',
+                        coordinates: [parseFloat(longitud), parseFloat(latitud)] // [Longitud, Latitud] IMPORTANTE el orden para Mongo
+                    },
+                    estado: 'activo',
+                    ultima_actualizacion: now
+                },
+                { upsert: true, new: true } // Crear si no existe
+            );
+            logger.info(`[UBICACIONES_CLIENTES] Ubicación sincronizada en MongoDB (Geo) para cliente ${clienteId}`);
+        } catch (mongoError) {
+            logger.error(`[UBICACIONES_CLIENTES] Error sincronizando Mongo: ${mongoError.message}`);
+            // No fallar la petición principal si falla Mongo, es secundario (por ahora)
+        }
+
         // Obtener la ubicación recién creada para la respuesta
         const [createdLocationSQL] = await sql.promise().query(
             `SELECT 
@@ -88,7 +111,7 @@ ubicacionClienteCtl.createClientLocation = async (req, res) => {
             JOIN 
                 clientes c ON uc.clienteId = c.id
             WHERE 
-                uc.id = ?`, 
+                uc.id = ?`,
             [newLocationId]
         );
         const createdLocation = createdLocationSQL[0];
@@ -146,7 +169,7 @@ ubicacionClienteCtl.getAllClientLocations = async (req, res) => {
             ORDER BY 
                 uc.fecha_creacion DESC`
         );
-        
+
         const locationsCompletas = locationsSQL.map(locSQL => ({
             id: locSQL.id,
             clienteId: locSQL.clienteId,
@@ -195,15 +218,15 @@ ubicacionClienteCtl.getClientLocationById = async (req, res) => {
             JOIN 
                 clientes c ON uc.clienteId = c.id
             WHERE 
-                uc.id = ? AND uc.estado = 'activo'`, 
+                uc.id = ? AND uc.estado = 'activo'`,
             [id]
         );
-        
+
         if (locationSQL.length === 0) {
             logger.warn(`[UBICACIONES_CLIENTES] Ubicación no encontrada o inactiva con ID: ${id}.`);
             return res.status(404).json({ error: 'Ubicación no encontrada o inactiva.' });
         }
-        
+
         const location = locationSQL[0];
         logger.info(`[UBICACIONES_CLIENTES] Ubicación encontrada con ID: ${id}.`);
 
@@ -231,7 +254,7 @@ ubicacionClienteCtl.getClientLocationById = async (req, res) => {
 ubicacionClienteCtl.updateClientLocation = async (req, res) => {
     const logger = getLogger(req);
     const { id } = req.params;
-    const { latitud, longitud, marca_tiempo, estado } = req.body; 
+    const { latitud, longitud, marca_tiempo, estado } = req.body;
     logger.info(`[UBICACIONES_CLIENTES] Solicitud de actualización de ubicación con ID: ${id}`);
 
     try {
@@ -241,15 +264,15 @@ ubicacionClienteCtl.updateClientLocation = async (req, res) => {
             logger.warn(`[UBICACIONES_CLIENTES] Ubicación no encontrada o inactiva para actualizar con ID: ${id}`);
             return res.status(404).json({ error: 'Ubicación no encontrada o inactiva para actualizar.' });
         }
-        
-        const now = new Date(); 
+
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
         // Preparar datos para SQL
         const camposSQL = [];
         const valoresSQL = [];
-        
+
         if (latitud !== undefined) {
             camposSQL.push('latitud = ?');
             valoresSQL.push(latitud);
@@ -280,13 +303,13 @@ ubicacionClienteCtl.updateClientLocation = async (req, res) => {
         // CAMBIO: Se corrigió la consulta SQL para usar el placeholder correcto para fecha_modificacion
         const consultaSQL = `UPDATE ubicaciones_clientes SET ${camposSQL.join(', ')} WHERE id = ?`;
         const [resultadoSQLUpdate] = await sql.promise().query(consultaSQL, valoresSQL);
-        
+
         if (resultadoSQLUpdate.affectedRows === 0) {
             logger.warn(`[UBICACIONES_CLIENTES] No se pudo actualizar la ubicación SQL con ID: ${id}.`);
         } else {
             logger.info(`[UBICACIONES_CLIENTES] Ubicación SQL actualizada con ID: ${id}`);
         }
-        
+
         // Obtener la ubicación actualizada para la respuesta
         const [updatedLocationSQL] = await sql.promise().query(
             `SELECT 
@@ -305,12 +328,12 @@ ubicacionClienteCtl.updateClientLocation = async (req, res) => {
             JOIN 
                 clientes c ON uc.clienteId = c.id
             WHERE 
-                uc.id = ?`, 
+                uc.id = ?`,
             [id]
         );
         const updatedLocation = updatedLocationSQL[0];
 
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Ubicación actualizada correctamente.',
             ubicacion: {
                 id: updatedLocation.id,
@@ -348,13 +371,13 @@ ubicacionClienteCtl.deleteClientLocation = async (req, res) => {
             return res.status(404).json({ error: 'Ubicación no encontrada o ya estaba eliminado.' });
         }
 
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
         // Marcar como eliminado en SQL directo
         const [resultadoSQL] = await sql.promise().query("UPDATE ubicaciones_clientes SET estado = 'eliminado', fecha_modificacion = ? WHERE id = ?", [formattedNow, id]);
-        
+
         if (resultadoSQL.affectedRows === 0) {
             logger.error(`[UBICACIONES_CLIENTES] No se pudo marcar como eliminado la ubicación con ID: ${id}.`);
             return res.status(500).json({ error: 'No se pudo eliminar la ubicación.' });

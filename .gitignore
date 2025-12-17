@@ -6,6 +6,7 @@ package-lock.json
 
 logs
 
+public
 
 # local env files
 .env.local

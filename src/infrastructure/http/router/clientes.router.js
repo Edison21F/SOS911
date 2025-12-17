@@ -3,13 +3,14 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  createClient,      
-  getAllClients,     
-  getClientById,     
-  updateClient,     
-  deleteClient,     
-  loginClient,       
-  deviceLoginHandler  
+  createClient,
+  getAllClients,
+  getClientById,
+  updateClient,
+  deleteClient,
+  loginClient,
+  deviceLoginHandler,
+  uploadProfilePicture // Add this import
 } = require('../controllers/clientes.controller');
 
 // --- Rutas Individuales (Acciones Específicas) ---
@@ -44,6 +45,13 @@ router.put('/actualizar/:id', updateClient);
 // Ruta para eliminar un cliente por su ID
 // URL final: DELETE /clientes/eliminar/123
 router.delete('/eliminar/:id', deleteClient);
+
+// Ruta para subir foto de perfil
+// URL final: POST /clientes/upload-profile/:id
+const upload = require('../../middlewares/multerMiddleware');
+
+
+router.post('/upload-profile/:id', upload.single('foto_perfil'), uploadProfilePicture);
 
 module.exports = router;
 

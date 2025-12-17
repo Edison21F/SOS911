@@ -28,8 +28,13 @@ const cliente = (sequelize, type) => { // Cambiado DataTypes a type
             comment: 'Hash de la contraseña del cliente'
         },
         estado: type.STRING, // Simplificado a tipo STRING
-        fecha_creacion: type.STRING, // Simplificado a tipo STRING
-        fecha_modificacion: type.STRING, // Simplificado a tipo STRING
+        fecha_creacion: type.STRING,
+        fecha_modificacion: type.STRING,
+        foto_perfil: {
+            type: type.STRING,
+            allowNull: true,
+            comment: 'Nombre del archivo de la foto de perfil'
+        }
     }, {
         timestamps: false,
         comment: 'Tabla de clientes'

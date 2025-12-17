@@ -3,11 +3,12 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  createUserNumber,   
-  getAllUserNumbers,  
-  getUserNumberById, 
-  updateUserNumber,  
-  deleteUserNumber   
+  createUserNumber,
+  getAllUserNumbers,
+  getUserNumberById,
+  updateUserNumber,
+  deleteUserNumber,
+  getNumbersByUser
 } = require('../controllers/usuarios_numeros.controller');
 
 // Ruta para crear un nuevo número de usuario
@@ -29,6 +30,10 @@ router.put('/actualizar/:id', updateUserNumber);
 // Ruta para eliminar un número por su ID
 // URL final: DELETE /usuarios_numeros/eliminar/123
 router.delete('/eliminar/:id', deleteUserNumber);
+
+// Ruta para obtener todos los números de un usuario específico
+// URL final: GET /usuarios_numeros/usuario/:usuarioId
+router.get('/usuario/:usuarioId', getNumbersByUser);
 
 module.exports = router;
 

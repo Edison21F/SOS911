@@ -354,4 +354,43 @@ const syncOfflineAlerts = async (req, res) => {
     }
 };
 
-module.exports = { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications, syncOfflineAlerts };
+// --- NUEVO: Responder a una alerta ---
+const respondToAlert = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { idUsuarioSql, nombre, respuesta, ubicacion } = req.body;
+        const io = req.app.get('io');
+
+        const alerta = await Alerta.findById(id);
+        if (!alerta) return res.status(404).json({ error: 'Alerta no encontrada' });
+
+        const nuevaRespuesta = {
+            idUsuarioSql,
+            nombre,
+            respuesta,
+            ubicacion,
+            fecha: new Date()
+        };
+
+        alerta.respuestas.push(nuevaRespuesta);
+        await alerta.save();
+
+        if (io) {
+            // Notificar al creador de la alerta
+            io.to(`user_${alerta.idUsuarioSql}`).emit('alert:response', {
+                alertaId: id,
+                respuesta: nuevaRespuesta
+            });
+
+            // Opcional: Notificar a todos los que siguen la alerta
+            // io.to(`alert_${id}`).emit('alert:response', ...);
+        }
+
+        res.json({ success: true, data: alerta });
+    } catch (error) {
+        console.error('Error respondiendo alerta:', error);
+        res.status(500).json({ error: 'Error al responder alerta' });
+    }
+};
+
+module.exports = { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications, syncOfflineAlerts, respondToAlert };

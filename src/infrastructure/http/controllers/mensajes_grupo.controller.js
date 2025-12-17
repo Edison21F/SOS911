@@ -47,7 +47,7 @@ mensajesGrupoCtl.createGroupMessage = async (req, res) => {
     }
 
     try {
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -97,11 +97,30 @@ mensajesGrupoCtl.createGroupMessage = async (req, res) => {
         // Esto asume que tienes las columnas 'ultimo_mensaje_fecha' y 'total_mensajes' en tu tabla 'grupos'
         // FIX: Se pasan los 3 parámetros correctamente para los 3 placeholders de la consulta
         await sql.promise().query(
-            "UPDATE grupos SET ultimo_mensaje_fecha = ?, total_mensajes = IFNULL(total_mensajes, 0) + 1, fecha_modificacion = ? WHERE id = ?", 
+            "UPDATE grupos SET ultimo_mensaje_fecha = ?, total_mensajes = IFNULL(total_mensajes, 0) + 1, fecha_modificacion = ? WHERE id = ?",
             [formattedNow, formattedNow, grupoId] // CORREGIDO: Pasar los 3 valores: ultimo_mensaje_fecha, fecha_modificacion, id
         );
         logger.info(`[MENSAJES_GRUPO] Metadatos del grupo ${grupoId} actualizados en SQL.`);
 
+
+        // 3. Emitir evento de Socket.IO a la sala del grupo
+        const io = req.app.get('io');
+        if (io) {
+            io.to(`group_${grupoId}`).emit('group_message', {
+                id: mensajeGuardadoMongo._id,
+                grupoId: mensajeGuardadoMongo.grupoId,
+                clienteId: mensajeGuardadoMongo.clienteId,
+                mensaje: mensajeGuardadoMongo.mensaje,
+                fecha_envio: mensajeGuardadoMongo.fecha_envio,
+                estado: mensajeGuardadoMongo.estado,
+                tipo_mensaje: mensajeGuardadoMongo.tipo_mensaje,
+                fecha_creacion: mensajeGuardadoMongo.fecha_creacion,
+                fecha_modificacion: mensajeGuardadoMongo.fecha_modificacion
+            });
+            logger.info(`[MENSAJES_GRUPO] Evento 'group_message' emitido a la sala group_${grupoId}`);
+        } else {
+            logger.warn('[MENSAJES_GRUPO] No se pudo obtener la instancia de Socket.IO para emitir el evento.');
+        }
 
         res.status(201).json({
             message: 'Mensaje creado exitosamente.',
@@ -140,7 +159,7 @@ mensajesGrupoCtl.getMessagesByGroup = async (req, res) => {
         // Obtener mensajes de MongoDB para el grupo especificado
         // Se ordena por fecha_envio para obtener el historial en orden cronológico
         const mensajesMongo = await mongo.MensajeGrupo.find({ grupoId, estado: 'activo' }).sort({ fecha_envio: 1 });
-        
+
         // Si no hay mensajes, devolver vacío
         if (mensajesMongo.length === 0) {
             logger.info(`[MENSAJES_GRUPO] No se encontraron mensajes activos para grupoId: ${grupoId}.`);
@@ -190,7 +209,7 @@ mensajesGrupoCtl.updateGroupMessage = async (req, res) => {
     }
 
     try {
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -250,7 +269,7 @@ mensajesGrupoCtl.deleteGroupMessage = async (req, res) => {
     logger.info(`[MENSAJES_GRUPO] Solicitud de eliminación lógica de mensaje con ID: ${id}`);
 
     try {
-        const now = new Date(); 
+        const now = new Date();
         // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
         const formattedNow = formatLocalDateTime(now);
 
@@ -271,7 +290,7 @@ mensajesGrupoCtl.deleteGroupMessage = async (req, res) => {
             "UPDATE mensajes_grupos SET estado = 'eliminado', fecha_modificacion = ? WHERE mongoMessageId = ?", // CORREGIDO: plural
             [formattedNow, id] // Usar 'formattedNow' para fecha_modificacion
         );
-        
+
         if (resultadoSQL.affectedRows === 0) {
             logger.warn(`[MENSAJES_GRUPO] Metadato de mensaje en SQL no encontrado para eliminar para Mongo _id: ${id}.`);
             // Esto no es un error crítico si el mensaje ya se eliminó en Mongo, pero se loguea.

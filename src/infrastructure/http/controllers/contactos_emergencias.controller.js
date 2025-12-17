@@ -131,7 +131,7 @@ contactosEmergenciasCtl.getAllEmergencyContacts = async (req, res) => {
 
         const params = [];
         if (!incluirEliminados) {
-            querySQL += ` WHERE ce.estado = 'activo'`;
+            querySQL += ` WHERE ce.estado IN ('activo', 'VINCULADO')`;
         }
         querySQL += ` ORDER BY ce.fecha_creacion DESC`; // Ordenar para consistencia
 
@@ -169,10 +169,12 @@ contactosEmergenciasCtl.getContactsByClientId = async (req, res) => {
 
     try {
         // Usar ORM (Sequelize) en lugar de SQL directo para mayor estabilidad
+        const { Op } = require('sequelize'); // Asegúrate de importar Op si no está, o usa array directo si Sequelize lo soporta
+        // ...
         const contactos = await orm.contactos_emergencia.findAll({
             where: {
                 clienteId: clienteId,
-                estado: 'activo'
+                estado: ['activo', 'VINCULADO'] // Permitir ambos estados
             },
             order: [['fecha_creacion', 'DESC']]
         });
@@ -367,51 +369,53 @@ contactosEmergenciasCtl.requestContact = async (req, res) => {
     }
 
     try {
-        const criterioCifrado = cifrarDato(criterio);
+        const criterioCifrado = cifrarDato(criterio); // Mantenemos para logs o si falla lo otro
         let usuarioDestino = null;
         let telefonoDestino = 'Sin número registrado';
 
-        // 1. Intentar buscar por CÉDULA en tabla clientes
-        const [usuarioPorCedula] = await sql.promise().query(
-            "SELECT id, nombre FROM clientes WHERE cedula_identidad = ? AND estado = 'activo'",
-            [criterioCifrado]
+        // 1. BUSCAR POR CÉDULA (Iterando y descifrando)
+        // Obtenemos todos los clientes activos con cédula
+        const [todosClientes] = await sql.promise().query(
+            "SELECT id, nombre, cedula_identidad FROM clientes WHERE estado = 'activo'"
         );
 
-        if (usuarioPorCedula.length > 0) {
-            usuarioDestino = usuarioPorCedula[0];
-            // Intentar buscar su teléfono
-            try {
-                const [numerosSQL] = await sql.promise().query(
-                    "SELECT numero FROM clientes_numeros WHERE clienteId = ? AND estado = 'activo' LIMIT 1",
-                    [usuarioDestino.id]
-                );
-                if (numerosSQL.length > 0) {
-                    telefonoDestino = safeDecrypt(numerosSQL[0].numero);
-                }
-            } catch (e) {
-                logger.warn('No se pudo obtener el numero del destino (por cédula):', e.message);
+        for (const cl of todosClientes) {
+            const cedulaReal = safeDecrypt(cl.cedula_identidad);
+            if (cedulaReal === criterio) {
+                usuarioDestino = cl;
+                // Buscar su teléfono
+                try {
+                    const [numerosSQL] = await sql.promise().query(
+                        "SELECT numero FROM clientes_numeros WHERE clienteId = ? AND estado = 'activo' LIMIT 1",
+                        [cl.id]
+                    );
+                    if (numerosSQL.length > 0) {
+                        telefonoDestino = safeDecrypt(numerosSQL[0].numero);
+                    }
+                } catch (e) { }
+                break;
             }
         }
 
-        // 2. Si no se encontró por cédula, intentar buscar por TELÉFONO en clientes_numeros
+        // 2. Si no se encontró por cédula, BUSCAR POR TELÉFONO (Iterando y descifrando)
         if (!usuarioDestino) {
-            const [numeroMatch] = await sql.promise().query(
-                "SELECT clienteId, numero FROM clientes_numeros WHERE numero = ? AND estado = 'activo'",
-                [criterioCifrado]
+            const [todosNumeros] = await sql.promise().query(
+                "SELECT clienteId, numero FROM clientes_numeros WHERE estado = 'activo'"
             );
 
-            if (numeroMatch.length > 0) {
-                const match = numeroMatch[0];
-                telefonoDestino = safeDecrypt(match.numero); // El teléfono es el criterio buscado
-
-                // Buscar datos del cliente propietario del número
-                const [usuarioPorTel] = await sql.promise().query(
-                    "SELECT id, nombre FROM clientes WHERE id = ? AND estado = 'activo'",
-                    [match.clienteId]
-                );
-
-                if (usuarioPorTel.length > 0) {
-                    usuarioDestino = usuarioPorTel[0];
+            for (const numObj of todosNumeros) {
+                const numeroReal = safeDecrypt(numObj.numero);
+                if (numeroReal === criterio) {
+                    telefonoDestino = numeroReal;
+                    // Buscar datos del cliente
+                    const [usuarioPorTel] = await sql.promise().query(
+                        "SELECT id, nombre FROM clientes WHERE id = ? AND estado = 'activo'",
+                        [numObj.clienteId]
+                    );
+                    if (usuarioPorTel.length > 0) {
+                        usuarioDestino = usuarioPorTel[0];
+                    }
+                    break;
                 }
             }
         }
@@ -484,17 +488,68 @@ contactosEmergenciasCtl.respondToRequest = async (req, res) => {
     try {
         const nuevoEstado = respuesta === 'ACEPTAR' ? 'VINCULADO' : 'RECHAZADO';
 
+        // 1. Obtener información de la solicitud ANTES de actualizar (para saber quién es quién)
+        const [solicitudSQL] = await sql.promise().query(
+            "SELECT clienteId, idUsuarioContactoSql FROM contactos_emergencias WHERE id = ?",
+            [id]
+        );
+
+        if (solicitudSQL.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada.' });
+        }
+        const solicitud = solicitudSQL[0];
+        const requesterId = solicitud.clienteId;
+        const accepterId = solicitud.idUsuarioContactoSql; // El que acepta (YOU)
+
+        // 2. Actualizar estado de la solicitud original
         const [updateResult] = await sql.promise().query(
             "UPDATE contactos_emergencias SET estado = ? WHERE id = ?",
             [nuevoEstado, id]
         );
 
-        if (updateResult.affectedRows === 0) {
-            return res.status(404).json({ error: 'Solicitud no encontrada.' });
-        }
+        // 3. Si se acepta, crear la relación inversa (Bidireccional)
+        if (respuesta === 'ACEPTAR') {
+            // Verificar si ya existe la inversa (B -> A)
+            const [relacionInversa] = await sql.promise().query(
+                "SELECT id FROM contactos_emergencias WHERE clienteId = ? AND idUsuarioContactoSql = ?",
+                [accepterId, requesterId]
+            );
 
-        // Si acepta, Opcional: Crear la relación inversa automáticamente?
-        // Por ahora solo actualizamos el estado unidireccional (A considera a B su contacto)
+            if (relacionInversa.length === 0) {
+                // Obtener datos del requester para guardarlos cifrados en la lista de B
+                const [requesterData] = await sql.promise().query(
+                    "SELECT nombre FROM clientes WHERE id = ?",
+                    [requesterId]
+                );
+
+                // Obtener teléfono del requester
+                let requesterPhone = 'Sin número';
+                const [requesterPhoneData] = await sql.promise().query(
+                    "SELECT numero FROM clientes_numeros WHERE clienteId = ? AND estado = 'activo' LIMIT 1",
+                    [requesterId]
+                );
+                if (requesterPhoneData.length > 0) requesterPhone = safeDecrypt(requesterPhoneData[0].numero);
+
+                const requesterName = requesterData.length > 0 ? safeDecrypt(requesterData[0].nombre) : 'Usuario';
+
+                const now = new Date();
+                const formattedNow = formatLocalDateTime(now);
+
+                await orm.contactos_emergencia.create({
+                    clienteId: accepterId,
+                    idUsuarioContactoSql: requesterId,
+                    nombre: cifrarDato(requesterName),
+                    telefono: cifrarDato(requesterPhone),
+                    descripcion: cifrarDato('Contacto vinculado'),
+                    estado: 'VINCULADO',
+                    fecha_creacion: formattedNow
+                });
+                logger.info(`[CONTACTOS_EMERGENCIA] Relación inversa creada automáticamente: ${accepterId} -> ${requesterId}`);
+            } else {
+                // Si existe pero no estaba vinculada, actualizarla? (Opcional)
+                // await sql.promise().query("UPDATE contactos_emergencias SET estado = 'VINCULADO' WHERE id = ?", [relacionInversa[0].id]);
+            }
+        }
 
         res.status(200).json({ message: `Solicitud ${nuevoEstado.toLowerCase()}.` });
 

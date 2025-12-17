@@ -19,6 +19,16 @@ const alertaSchema = new mongoose.Schema({
         default: 'CREADA'
     },
     emitida_offline: { type: Boolean, default: false },
+    respuestas: [{
+        fecha: { type: Date, default: Date.now },
+        idUsuarioSql: { type: String },
+        nombre: { type: String },
+        respuesta: { type: String }, // 'En camino', 'Enterado', etc.
+        ubicacion: {
+            latitud: Number,
+            longitud: Number
+        }
+    }],
     location: { // GeoJSON para indexado espacial
         type: { type: String, enum: ['Point'], default: 'Point' },
         coordinates: { type: [Number], required: true } // [longitud, latitud]

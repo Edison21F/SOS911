@@ -3,10 +3,10 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  createGroupMessage,  
-  getMessagesByGroup,  
-  updateGroupMessage,   
-  deleteGroupMessage   
+  createGroupMessage,
+  getMessagesByGroup,
+  updateGroupMessage,
+  deleteGroupMessage
 } = require('../controllers/mensajes_grupo.controller');
 
 // Ruta para crear un nuevo mensaje en un grupo
@@ -16,7 +16,7 @@ router.post('/crear', createGroupMessage);
 
 // Ruta para listar todos los mensajes de un grupo específico
 // URL final: GET /mensajes_grupo/listar/por-grupo/123
-router.get('/listar/por-grupo/:grupo_id', getMessagesByGroup);
+router.get('/listar/por-grupo/:grupoId', getMessagesByGroup);
 
 // Ruta para actualizar un mensaje por su ID
 // URL final: PUT /mensajes_grupo/actualizar/123

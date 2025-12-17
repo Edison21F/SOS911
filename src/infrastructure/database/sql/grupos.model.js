@@ -1,16 +1,21 @@
 // Definición del modelo "grupos" para Sequelize (ORM)
-const grupos = (sequelize, type) => { 
+const grupos = (sequelize, type) => {
     return sequelize.define('grupos', {
         id: {
-            type: type.INTEGER, 
+            type: type.INTEGER,
             autoIncrement: true,
             primaryKey: true,
             comment: 'Campo único de grupos'
         },
         nombre: {
-            type: type.STRING, 
+            type: type.STRING,
             allowNull: false,
             comment: 'Nombre de grupo'
+        },
+        codigo_acceso: {
+            type: type.STRING,
+            allowNull: true,
+            comment: 'Código de acceso de 6 dígitos'
         },
         estado: type.STRING, // Simplificado a tipo STRING
         fecha_creacion: type.STRING, // Simplificado a tipo STRING

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications, syncOfflineAlerts } = require('../controllers/alertas.controller');
+const { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications, syncOfflineAlerts, respondToAlert } = require('../controllers/alertas.controller');
 
 // POST /alertas - Crear nueva emergencia
 router.post('/', createAlert);

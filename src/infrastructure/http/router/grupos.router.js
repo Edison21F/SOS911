@@ -3,16 +3,31 @@ const express = require('express');
 const router = express.Router();
 
 const {
-  createGroup,  
-  getAllGroups, 
-  getGroupById, 
-  updateGroup,  
-  deleteGroup    
+  createGroup,
+  getAllGroups,
+  getGroupById,
+  updateGroup,
+  deleteGroup,
+  joinGroup,
+  getMembers,
+  uploadPhoto
 } = require('../controllers/grupos.controller');
 
 // Ruta para crear un nuevo grupo
 // URL final: POST /grupos/crear
 router.post('/crear', createGroup);
+
+// Ruta para unirse a un grupo por código
+// URL final: POST /grupos/unirse
+router.post('/unirse', joinGroup);
+
+// Ruta para obtener miembros del grupo
+// URL final: GET /grupos/miembros/:id
+router.get('/miembros/:id', getMembers);
+
+// Ruta para subir foto de grupo
+// URL final: POST /grupos/foto/:id
+router.post('/foto/:id', uploadPhoto);
 
 // Ruta para listar todos los grupos
 // URL final: GET /grupos/listar

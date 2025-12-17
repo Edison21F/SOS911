@@ -105,7 +105,7 @@ const logger = winston.createLogger({
       filename: path.join(logDir, 'combined.log'), // <-- Aquí se define 'combined.log'
       level: 'http', // Nivel para el archivo
       maxsize: 5242880 * 5, // 25MB
-      maxFiles: 3 
+      maxFiles: 3
     }),
     ...(process.env.NODE_ENV !== 'production'
       ? [new winston.transports.Console({
@@ -268,7 +268,9 @@ const conditionalCsrf = (req, res, next) => {
     '/alertas',
     '/ubicaciones',
     '/dispositivos',
-    '/usuarios'
+    '/usuarios',
+    '/grupos',
+    '/mensajes_grupo'
   ];
 
   const shouldExclude = excludedPaths.some(path => req.path.startsWith(path));

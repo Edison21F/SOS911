@@ -6,7 +6,7 @@ const { sendPushNotifications } = require('../../services/notification.service')
 // Crear una nueva alerta
 const createAlert = async (req, res) => {
     try {
-        const { idUsuarioSql, tipo, prioridad, ubicacion, detalles } = req.body; // ubicacion: { latitud, longitud }
+        const { idUsuarioSql, tipo, prioridad, ubicacion, detalles, emitida_offline, fecha_creacion } = req.body; // ubicacion: { latitud, longitud }
         const io = req.app.get('io');
 
         // 1. Crear la alerta en BD con GeoJSON
@@ -20,8 +20,10 @@ const createAlert = async (req, res) => {
                 coordinates: [ubicacion.longitud, ubicacion.latitud]
             },
             detalles,
+            emitida_offline: emitida_offline || false,
+            fecha_creacion: fecha_creacion || Date.now(),
             estado: 'CREADA',
-            historial_estados: [{ estado: 'CREADA', comentario: 'Inicio de emergencia' }]
+            historial_estados: [{ estado: 'CREADA', comentario: emitida_offline ? 'Sincronización alerta offline' : 'Inicio de emergencia' }]
         });
         await nuevaAlerta.save();
 
@@ -295,4 +297,61 @@ const getNotifications = async (req, res) => {
 };
 
 
-module.exports = { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications };
+// --- NUEVO: Sincronización masiva de alertas offline ---
+const syncOfflineAlerts = async (req, res) => {
+    try {
+        const { alertas } = req.body; // Array de alertas
+        const io = req.app.get('io');
+
+        if (!Array.isArray(alertas) || alertas.length === 0) {
+            return res.status(400).json({ error: 'Se requiere un array de alertas para sincronizar' });
+        }
+
+        console.log(`[SYNC] Recibidas ${alertas.length} alertas offline para sincronizar.`);
+        const resultados = [];
+
+        for (const alertaData of alertas) {
+            try {
+                // Reutilizamos la lógica de creación pero adaptada
+                const { idUsuarioSql, tipo, prioridad, ubicacion, detalles, fecha_creacion } = alertaData;
+
+                const nuevaAlerta = new Alerta({
+                    idUsuarioSql,
+                    tipo,
+                    prioridad,
+                    ubicacion,
+                    location: {
+                        type: 'Point',
+                        coordinates: [ubicacion.longitud, ubicacion.latitud]
+                    },
+                    detalles,
+                    emitida_offline: true,
+                    fecha_creacion: fecha_creacion || Date.now(),
+                    estado: 'CREADA',
+                    historial_estados: [{ estado: 'CREADA', comentario: 'Sincronización Offline' }]
+                });
+
+                await nuevaAlerta.save();
+                resultados.push({ idOriginal: alertaData.id_local, idBackend: nuevaAlerta._id, status: 'synced' });
+
+                // Notificar sockets (aunque sea tarde, es importante avisar)
+                if (io) {
+                    io.to(`user_${idUsuarioSql}`).emit('alert:created', nuevaAlerta);
+                    // Aquí también podrías notificar a contactos si la alerta es reciente (< 1 hora)
+                }
+
+            } catch (err) {
+                console.error('[SYNC] Error procesando alerta individual:', err);
+                resultados.push({ idOriginal: alertaData.id_local, error: 'Error al guardar', status: 'failed' });
+            }
+        }
+
+        res.json({ success: true, resultados });
+
+    } catch (error) {
+        console.error('Error en sincronización masiva:', error);
+        res.status(500).json({ error: 'Error server sync' });
+    }
+};
+
+module.exports = { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications, syncOfflineAlerts };

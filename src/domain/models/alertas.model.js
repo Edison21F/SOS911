@@ -7,17 +7,18 @@ const alertaSchema = new mongoose.Schema({
         type: String,
         enum: ['MEDICA', 'PELIGRO', 'INCENDIO', 'TRANSITO', 'PREVENTIVA'],
         required: true
-    }, 
+    },
     prioridad: {
         type: String,
-        enum: ['CRITICA', 'ALTA', 'MEDIA'],
+        enum: ['CRITICA', 'ALTA', 'MEDIA', 'BAJA', 'INFORMÁTIVA'],
         required: true
     },
     estado: {
         type: String,
-        enum: ['CREADA', 'NOTIFICADA', 'ATENDIDA', 'CERRADA', 'CANCELADA'],
+        enum: ['CREADA', 'NOTIFICADA', 'ATENDIDA', 'ESCALADA', 'CERRADA', 'CANCELADA'],
         default: 'CREADA'
     },
+    emitida_offline: { type: Boolean, default: false },
     location: { // GeoJSON para indexado espacial
         type: { type: String, enum: ['Point'], default: 'Point' },
         coordinates: { type: [Number], required: true } // [longitud, latitud]

@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications } = require('../controllers/alertas.controller');
+const { createAlert, updateAlertStatus, getActiveAlerts, getNearbyAlerts, getAlertHistory, getNotifications, syncOfflineAlerts } = require('../controllers/alertas.controller');
 
 // POST /alertas - Crear nueva emergencia
 router.post('/', createAlert);
+
+// POST /alertas/sync-offline - Sincronizar alertas guardadas localmente
+router.post('/sync-offline', syncOfflineAlerts);
 
 // GET /alertas/cercanas - Obtener alertas cercanas
 router.get('/cercanas', getNearbyAlerts);

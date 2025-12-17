@@ -88,5 +88,5 @@ Puedes probar estos endpoints utilizando herramientas como **Postman**, **Insomn
 *   **Dispositivos**: `/dispositivos`
 *   **Roles y Permisos**: `/roles`, `/usuarios_roles`
 
-## 🛠 Comandos de Utilidad/Diagnóstico
-Si encuentras problemas con las rutas o dependencias, puedes ejecutar los scripts de diagnóstico ubicados en la raíz (si están disponibles) o verificar los logs en `src/infrastructure/logs/`.
+## Version de la app
+ 2.1.0

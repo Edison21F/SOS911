@@ -23,4 +23,7 @@ router.get('/historial/:idUsuarioSql', getAlertHistory);
 // GET /alertas/notificaciones/:idUsuarioSql - Obtener notificaciones recibidas
 router.get('/notificaciones/:idUsuarioSql', getNotifications);
 
+// POST /alertas/responder/:id - Responder a una alerta (Voy en camino, etc)
+router.post('/responder/:id', respondToAlert);
+
 module.exports = router;

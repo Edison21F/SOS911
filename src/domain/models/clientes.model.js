@@ -7,7 +7,13 @@ const clientesMongoSchema = new mongoose.Schema({
     fecha_nacimiento: String, // Cambiado a String
     estado: String, // Cambiado a String simple, eliminando enum y default
     fecha_creacion: String, // Cambiado a String
-    fecha_modificacion: String // Cambiado a String
+    fecha_modificacion: String, // Cambiado a String
+    ficha_medica: {
+        tipo_sangre: String,
+        alergias: String,
+        padecimiento: String,
+        medicamentos: String
+    }
 });
 
 // Modelo 'Cliente' (singular) -> Colección 'clientes' (plural)

@@ -226,7 +226,8 @@ clientesCtl.getClientById = async (req, res) => {
             fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
             fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
             fecha_modificacion_mongo: clienteMongo?.fecha_modificacion || null,
-            foto_perfil: clienteSQL.foto_perfil // Return profile picture filename
+            foto_perfil: clienteSQL.foto_perfil, // Return profile picture filename
+            ficha_medica: clienteMongo?.ficha_medica || null
         };
         res.status(200).json(clienteCompleto);
     } catch (error) {
@@ -241,7 +242,7 @@ clientesCtl.updateClient = async (req, res) => {
     // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
     // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
     const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
-    const { nombre, correo_electronico, cedula_identidad, contrasena, fecha_nacimiento, direccion, estado, numero_ayudas } = req.body;
+    const { nombre, correo_electronico, cedula_identidad, contrasena, fecha_nacimiento, direccion, estado, numero_ayudas, ficha_medica } = req.body;
     logger.info(`[CLIENTE] Solicitud de actualización de cliente con ID: ${idCliente}`);
 
     try {
@@ -331,6 +332,7 @@ clientesCtl.updateClient = async (req, res) => {
         if (direccion !== undefined) updateDataMongo.direccion = cifrarDato(direccion); // Cifrar dirección en Mongo
         // Replicar el estado si se actualiza en SQL
         if (estado !== undefined) updateDataMongo.estado = estado;
+        if (ficha_medica !== undefined) updateDataMongo.ficha_medica = ficha_medica;
 
         // Siempre actualizar fecha_modificacion en Mongo
         updateDataMongo.fecha_modificacion = formattedNow; // CAMBIO: Usar formattedNow
@@ -357,6 +359,7 @@ clientesCtl.updateClient = async (req, res) => {
                 estado: updatedClienteSQL.estado,
                 fecha_nacimiento: updatedClienteMongo?.fecha_nacimiento || null,
                 direccion: updatedClienteMongo ? safeDecrypt(updatedClienteMongo.direccion) : null,
+                ficha_medica: updatedClienteMongo?.ficha_medica || null
             }
         });
 

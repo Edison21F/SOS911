@@ -10,8 +10,10 @@ const {
   deleteClient,
   loginClient,
   deviceLoginHandler,
-  uploadProfilePicture // Add this import
+  uploadProfilePicture, // Add this import
+  getClientStats // Dashboard stats
 } = require('../controllers/clientes.controller');
+
 
 // --- Rutas Individuales (Acciones Específicas) ---
 // Estas rutas ya son descriptivas y es correcto que tengan su propio endpoint.
@@ -52,6 +54,10 @@ const upload = require('../../middlewares/multerMiddleware');
 
 
 router.post('/upload-profile/:id', upload.single('foto_perfil'), uploadProfilePicture);
+
+// Ruta para obtener estadísticas del cliente (Dashboard)
+// URL final: GET /clientes/stats/123
+router.get('/stats/:id', getClientStats);
 
 module.exports = router;
 

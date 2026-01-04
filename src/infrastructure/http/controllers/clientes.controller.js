@@ -629,8 +629,88 @@ clientesCtl.uploadProfilePicture = async (req, res) => {
     }
 };
 
+// 9. OBTENER ESTADÍSTICAS DEL CLIENTE PARA DASHBOARD
+clientesCtl.getClientStats = async (req, res) => {
+    const logger = getLogger(req);
+    const { id } = req.params;
+    logger.info(`[CLIENTE] Solicitud de estadísticas para cliente ID: ${id}`);
+
+    try {
+        // Importar modelo de Alertas (MongoDB)
+        const Alerta = require('../../../domain/models/alertas.model');
+
+        // 1. Alertas activas (MongoDB) - estados no cerrados
+        const alertasActivas = await Alerta.countDocuments({
+            idUsuarioSql: id.toString(),
+            estado: { $in: ['CREADA', 'NOTIFICADA', 'ATENDIDA'] }
+        });
+        logger.info(`[CLIENTE] Alertas activas: ${alertasActivas}`);
+
+        // 2. Alertas resueltas (MongoDB) - estados cerrados
+        const alertasResueltas = await Alerta.countDocuments({
+            idUsuarioSql: id.toString(),
+            estado: { $in: ['CERRADA', 'CANCELADA'] }
+        });
+        logger.info(`[CLIENTE] Alertas resueltas: ${alertasResueltas}`);
+
+        // 3. Número de contactos (SQL)
+        // CAMBIO: Consultar la tabla 'contactos_emergencias' para ver cuántos tiene registrados,
+        // en lugar de 'contactos_clientes' que parece ser transaccional/notificaciones.
+        const [contactosResult] = await sql.promise().query(
+            "SELECT COUNT(*) as total FROM contactos_emergencias WHERE clienteId = ? AND estado IN ('activo', 'VINCULADO')",
+            [id]
+        );
+        const contactos = contactosResult[0]?.total || 0;
+        logger.info(`[CLIENTE] Contactos registrados: ${contactos}`);
+
+        // 4. Tiempo de respuesta promedio (calculado desde historial de estados)
+        let tiempoRespuestaPromedio = 0;
+        try {
+            const alertasConRespuesta = await Alerta.find({
+                idUsuarioSql: id.toString(),
+                'historial_estados.1': { $exists: true } // Al menos 2 estados
+            });
+
+            if (alertasConRespuesta.length > 0) {
+                let sumaTiempos = 0;
+                let count = 0;
+                alertasConRespuesta.forEach(alerta => {
+                    if (alerta.historial_estados.length >= 2) {
+                        const t1 = new Date(alerta.historial_estados[0].fecha || alerta.fecha_creacion);
+                        const t2 = new Date(alerta.historial_estados[1].fecha);
+                        const diff = (t2 - t1) / 1000; // segundos
+                        if (diff > 0 && diff < 3600) { // Solo si es razonable (< 1 hora)
+                            sumaTiempos += diff;
+                            count++;
+                        }
+                    }
+                });
+                tiempoRespuestaPromedio = count > 0 ? Math.round(sumaTiempos / count) : 0;
+            }
+        } catch (avgError) {
+            logger.warn(`[CLIENTE] Error calculando tiempo promedio: ${avgError.message}`);
+        }
+        logger.info(`[CLIENTE] Tiempo respuesta promedio: ${tiempoRespuestaPromedio}s`);
+
+        res.status(200).json({
+            success: true,
+            stats: {
+                alertasActivas,
+                alertasResueltas,
+                contactos,
+                tiempoRespuestaPromedio
+            }
+        });
+
+    } catch (error) {
+        logger.error(`[CLIENTE] Error obteniendo estadísticas: ${error.message}`, error);
+        res.status(500).json({ error: 'Error interno al obtener estadísticas.' });
+    }
+};
+
 module.exports = {
     ...clientesCtl,
-    uploadProfilePicture: clientesCtl.uploadProfilePicture
+    uploadProfilePicture: clientesCtl.uploadProfilePicture,
+    getClientStats: clientesCtl.getClientStats
 };
 

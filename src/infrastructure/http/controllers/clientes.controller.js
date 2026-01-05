@@ -1,582 +1,253 @@
-// Importa los modelos de ambas bases de datos y las utilidades
-const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL)
-const sql = require('../../database/connection/dataBase.sql'); // MySQL directo
-const mongo = require('../../database/connection/dataBase.mongo'); // Para Mongoose (MongoDB)
+// --- Hexagonal Imports ---
+const MysqlMongoClienteRepository = require('../../adapters/secondary/database/MysqlMongoClienteRepository');
 
-const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates');
+const CrearCliente = require('../../../../application/use-cases/cliente/CrearCliente');
+const ListarClientes = require('../../../../application/use-cases/cliente/ListarClientes');
+const ObtenerCliente = require('../../../../application/use-cases/cliente/ObtenerCliente');
+const ActualizarCliente = require('../../../../application/use-cases/cliente/ActualizarCliente');
+const EliminarCliente = require('../../../../application/use-cases/cliente/EliminarCliente');
+const LoginCliente = require('../../../../application/use-cases/cliente/LoginCliente');
+const LoginDevice = require('../../../../application/use-cases/cliente/LoginDevice');
+const SubirFotoPerfilCliente = require('../../../../application/use-cases/cliente/SubirFotoPerfilCliente');
+const ObtenerEstadisticasCliente = require('../../../../application/use-cases/cliente/ObtenerEstadisticasCliente');
+
+// --- Dependency Injection ---
+const clienteRepository = new MysqlMongoClienteRepository();
+
+const crearClienteUseCase = new CrearCliente(clienteRepository);
+const listarClientesUseCase = new ListarClientes(clienteRepository);
+const obtenerClienteUseCase = new ObtenerCliente(clienteRepository);
+const actualizarClienteUseCase = new ActualizarCliente(clienteRepository);
+const eliminarClienteUseCase = new EliminarCliente(clienteRepository);
+const loginClienteUseCase = new LoginCliente(clienteRepository);
+const loginDeviceUseCase = new LoginDevice(clienteRepository);
+const subirFotoPerfilClienteUseCase = new SubirFotoPerfilCliente(clienteRepository);
+const obtenerEstadisticasClienteUseCase = new ObtenerEstadisticasCliente(clienteRepository);
 
 const clientesCtl = {};
 
-// --- Utilidad para Descifrado Seguro ---
-function safeDecrypt(data) {
-    try {
-        return data ? descifrarDato(data) : '';
-    } catch (error) {
-        console.error('Error al descifrar datos:', error.message);
-        return '';
-    }
-}
-
-// Función para formatear una fecha a 'YYYY-MM-DD HH:mm:ss'
-function formatLocalDateTime(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses son 0-index
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-// Utilidad para obtener el logger (manteniendo lo que ya tenías)
 function getLogger(req) {
     return req.app && req.app.get ? req.app.get('logger') : console;
 }
 
-// --- CRUD de Clientes ---
-
 // 1. CREAR CLIENTE
 clientesCtl.createClient = async (req, res) => {
     const logger = getLogger(req);
-    const { nombre, correo_electronico, cedula_identidad, contrasena, fecha_nacimiento, direccion, deviceId, tipo_dispositivo, modelo_dispositivo } = req.body;
-
-    logger.info(`[CLIENTE] Solicitud de creación de cliente: correo=${correo_electronico}, nombre=${nombre}`);
+    const { nombre, correo_electronico, cedula_identidad, contrasena, direccion } = req.body;
+    logger.info(`[CLIENTE] Solicitud de creación (Hexagonal): correo=${correo_electronico}, nombre=${nombre}`);
 
     try {
-        // Validar campos obligatorios
-        if (!nombre || !correo_electronico || !cedula_identidad || !contrasena || !direccion) {
-            logger.warn('[CLIENTE] Creación fallida: campos obligatorios faltantes.');
-            return res.status(400).json({ message: 'Todos los campos obligatorios son requeridos (nombre, correo_electronico, cedula_identidad, contrasena, direccion).' });
-        }
+        const nuevoCliente = await crearClienteUseCase.execute(req.body);
 
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // **Validación de unicidad para correo_electronico y cedula_identidad**
-        // Obtener todos los clientes para verificar unicidad (descifrando y comparando)
-        const [allClientesSQL] = await sql.promise().query("SELECT correo_electronico, cedula_identidad FROM clientes");
-
-        const isEmailTaken = allClientesSQL.some(c => safeDecrypt(c.correo_electronico) === correo_electronico);
-        if (isEmailTaken) {
-            logger.warn(`[CLIENTE] Creación fallida: El correo electrónico "${correo_electronico}" ya está registrado.`);
-            return res.status(409).json({ message: 'El correo electrónico ya está registrado.' });
-        }
-
-        const isCedulaTaken = allClientesSQL.some(c => safeDecrypt(c.cedula_identidad) === cedula_identidad);
-        if (isCedulaTaken) {
-            logger.warn(`[CLIENTE] Creación fallida: La cédula de identidad "${cedula_identidad}" ya está registrada.`);
-            return res.status(409).json({ message: 'La cédula de identidad ya está registrada.' });
-        }
-
-        // Cifrar datos sensibles y contraseña
-        const nombreCifrado = cifrarDato(nombre);
-        const correoCifrado = cifrarDato(correo_electronico);
-        const cedulaCifrada = cifrarDato(cedula_identidad);
-        const contrasenaCifrada = cifrarDato(contrasena); // Cifrado de contraseña con cifrarDato
-
-        // Crear cliente en la base de datos SQL usando ORM (orm.cliente.create())
-        const nuevoClienteSQL = {
-            nombre: nombreCifrado,
-            correo_electronico: correoCifrado,
-            cedula_identidad: cedulaCifrada,
-            contrasena_hash: contrasenaCifrada, // Usar la contraseña cifrada
-            numero_ayudas: 0,
-            estado: 'activo',
-            fecha_creacion: formattedNow, // Se añade la fecha de creación (hora local formateada)
-            // fecha_modificacion NO se incluye en la creación, se actualizará en modificaciones
-        };
-        const clienteGuardadoSQL = await orm.cliente.create(nuevoClienteSQL);
-        const idClienteSql = clienteGuardadoSQL.id; // Obtener el ID insertado por ORM
-        logger.info(`[CLIENTE] Cliente SQL creado exitosamente con ID: ${idClienteSql}`);
-
-        // Crear documento en la base de datos MongoDB
-        // fecha_creacion se establece, fecha_modificacion no se incluye en la creación inicial
-        const nuevoClienteMongo = {
-            idClienteSql,
-            fecha_nacimiento,
-            direccion: cifrarDato(direccion), // Cifrar dirección en Mongo
-            estado: 'activo', // Estado por defecto
-            fecha_creacion: formattedNow // Se añade la fecha de creación para Mongo (hora local formateada)
-        };
-        await mongo.Cliente.create(nuevoClienteMongo);
-        logger.info(`[CLIENTE] Cliente Mongo creado exitosamente para ID SQL: ${idClienteSql}`);
-
-        // Registrar dispositivo si se envía
-        if (deviceId && tipo_dispositivo && modelo_dispositivo) {
-            logger.info(`[DISPOSITIVO] Registrando dispositivo para nuevo cliente: ${idClienteSql}, deviceId=${deviceId}`);
-
-            // Desactivar cualquier dispositivo existente con el mismo deviceId (sin importar el cliente_id)
-            const [todosDispositivosSQL] = await sql.promise().query("SELECT id, token_dispositivo, clienteId FROM dispositivos WHERE estado = 'activo'");
-            for (const disp of todosDispositivosSQL) {
-                try {
-                    const deviceIdDescifrado = descifrarDato(disp.token_dispositivo);
-                    if (deviceIdDescifrado === deviceId) {
-                        await sql.promise().query("UPDATE dispositivos SET estado = 'inactivo', fecha_modificacion = ? WHERE id = ?", [formattedNow, disp.id]); // Usar 'formattedNow'
-                        logger.info(`[DISPOSITIVO] Dispositivo previamente activo desactivado: clienteId=${disp.clienteId}, deviceId=${deviceId}`);
-                    }
-                } catch (error) {
-                    logger.warn(`[DISPOSITIVO] Error al descifrar token en registro de dispositivo: ${error.message}`);
-                }
-            }
-
-            // Crear el nuevo dispositivo para este cliente usando ORM (orm.dispositivos.create())
-            const nuevoDispositivo = {
-                clienteId: idClienteSql,
-                token_dispositivo: cifrarDato(deviceId),
-                tipo_dispositivo: cifrarDato(tipo_dispositivo),
-                modelo_dispositivo: cifrarDato(modelo_dispositivo),
-                estado: 'activo',
-                fecha_creacion: formattedNow, // Se añade la fecha de creación (hora local formateada)
-                // fecha_modificacion NO se incluye en la creación
-            };
-            await orm.dispositivos.create(nuevoDispositivo);
-            logger.info(`[DISPOSITIVO] Dispositivo registrado exitosamente para cliente ${idClienteSql}.`);
-        }
+        logger.info(`[CLIENTE] Cliente creado exitosamente con ID: ${nuevoCliente.id}`);
 
         res.status(201).json({
             message: 'Cliente registrado exitosamente.',
-            clienteId: idClienteSql
+            clienteId: nuevoCliente.id
         });
-
     } catch (error) {
-        logger.error(`[CLIENTE] Error al crear el cliente: ${error.message}`, error);
+        logger.error(`[CLIENTE] Error al crear el cliente: ${error.message}`);
+
+        if (error.message.includes('requeridos')) return res.status(400).json({ message: error.message });
+        if (error.message.includes('ya está registrado') || error.message.includes('ya está registrada')) {
+            return res.status(409).json({ message: error.message });
+        }
         res.status(500).json({ error: 'Error interno del servidor al crear el cliente.' });
     }
 };
 
-// 2. OBTENER TODOS LOS CLIENTES (Usando SQL Directo)
+// 2. OBTENER TODOS LOS CLIENTES
 clientesCtl.getAllClients = async (req, res) => {
     const logger = getLogger(req);
-    const { incluirEliminados } = req.query; // Para manejar borrado lógico
-    logger.info(`[CLIENTE] Solicitud de obtención de todos los clientes (incluirEliminados: ${incluirEliminados})`);
+    const { incluirEliminados } = req.query;
+    logger.info(`[CLIENTE] Solicitud de obtención de todos (Hexagonal)`);
 
     try {
-        const estadoQuery = incluirEliminados === 'true' ? "" : " WHERE estado = 'activo'";
-        const [clientesSQL] = await sql.promise().query(`SELECT * FROM clientes${estadoQuery}`);
+        const clientes = await listarClientesUseCase.execute(incluirEliminados === 'true');
 
-        const clientesCompletos = await Promise.all(
-            clientesSQL.map(async (clienteSQL) => {
-                let clienteMongo = null;
-                // SOLO si se encuentra un cliente en SQL, intentamos buscar en Mongo
-                if (clienteSQL) {
-                    clienteMongo = await mongo.Cliente.findOne({ idClienteSql: clienteSQL.id });
-                }
-                return {
-                    id: clienteSQL.id,
-                    nombre: safeDecrypt(clienteSQL.nombre),
-                    correo_electronico: safeDecrypt(clienteSQL.correo_electronico),
-                    cedula_identidad: safeDecrypt(clienteSQL.cedula_identidad),
-                    numero_ayudas: clienteSQL.numero_ayudas,
-                    estado: clienteSQL.estado,
-                    fecha_nacimiento: clienteMongo ? clienteMongo.fecha_nacimiento : null,
-                    direccion: clienteMongo ? safeDecrypt(clienteMongo.direccion) : null, // Descifrar dirección de Mongo
-                    fecha_creacion_sql: clienteSQL.fecha_creacion,
-                    fecha_modificacion_sql: clienteSQL.fecha_modificacion,
-                    fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
-                    fecha_modificacion_mongo: clienteMongo?.fecha_modificacion || null,
-                };
-            })
-        );
-        logger.info(`[CLIENTE] Se devolvieron ${clientesCompletos.length} clientes.`);
-        res.status(200).json(clientesCompletos);
+        // Map to legacy response
+        const clientesResponse = clientes.map(c => ({
+            id: c.id,
+            nombre: c.nombre,
+            correo_electronico: c.correo_electronico,
+            cedula_identidad: c.cedula_identidad,
+            numero_ayudas: c.numero_ayudas,
+            estado: c.estado,
+            fecha_nacimiento: c.fecha_nacimiento,
+            direccion: c.direccion,
+            fecha_creacion_sql: c.fecha_creacion,
+            fecha_modificacion_sql: c.fecha_modificacion,
+            // Legacy mongo specific fields provided for compatibility
+            fecha_creacion_mongo: c.fecha_creacion,
+            fecha_modificacion_mongo: c.fecha_modificacion
+        }));
+
+        logger.info(`[CLIENTE] Se devolvieron ${clientesResponse.length} clientes.`);
+        res.status(200).json(clientesResponse);
     } catch (error) {
-        logger.error('Error al obtener todos los clientes:', error);
-        res.status(500).json({ error: 'Error interno del servidor al obtener clientes.' });
+        logger.error('Error al obtener todos los clientes:', error.message);
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
-// 3. OBTENER CLIENTE POR ID (Usando SQL Directo)
+// 3. OBTENER CLIENTE POR ID
 clientesCtl.getClientById = async (req, res) => {
     const logger = getLogger(req);
-    // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
-    // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
     const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
-    logger.info(`[CLIENTE] Solicitud de obtención de cliente por ID: ${idCliente}`);
+    logger.info(`[CLIENTE] Solicitud de obtención por ID (Hexagonal): ${idCliente}`);
 
     try {
-        const [clientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE id = ? AND estado = 'activo'", [idCliente]);
+        const cliente = await obtenerClienteUseCase.execute(idCliente);
 
-        if (clientesSQL.length === 0) {
-            logger.warn(`[CLIENTE] Cliente no encontrado o eliminado con ID: ${idCliente}`);
+        if (!cliente) {
+            logger.warn(`[CLIENTE] Cliente no encontrado: ${idCliente}`);
             return res.status(404).json({ error: 'Cliente no encontrado o eliminado.' });
         }
 
-        const clienteSQL = clientesSQL[0];
-        logger.info(`[CLIENTE] Cliente SQL encontrado con ID: ${idCliente}`);
-
-        let clienteMongo = null;
-        // SOLO si se encuentra un cliente en SQL, intentamos buscar en Mongo
-        if (clienteSQL) {
-            clienteMongo = await mongo.Cliente.findOne({ idClienteSql: idCliente });
-        }
-        logger.info(`[CLIENTE] Cliente Mongo encontrado para ID SQL: ${idCliente}`);
+        logger.info(`[CLIENTE] Cliente encontrado: ${idCliente}`);
 
         const clienteCompleto = {
-            id: clienteSQL.id,
-            nombre: safeDecrypt(clienteSQL.nombre),
-            correo_electronico: safeDecrypt(clienteSQL.correo_electronico),
-            cedula_identidad: safeDecrypt(clienteSQL.cedula_identidad),
-            numero_ayudas: clienteSQL.numero_ayudas,
-            estado: clienteSQL.estado,
-            fecha_nacimiento: clienteMongo?.fecha_nacimiento || null,
-            direccion: clienteMongo ? safeDecrypt(clienteMongo.direccion) : null, // Descifrar dirección de Mongo
-            fecha_creacion_sql: clienteSQL.fecha_creacion,
-            fecha_modificacion_sql: clienteSQL.fecha_modificacion,
-            fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
-            fecha_creacion_mongo: clienteMongo?.fecha_creacion || null,
-            fecha_modificacion_mongo: clienteMongo?.fecha_modificacion || null,
-            foto_perfil: clienteSQL.foto_perfil, // Return profile picture filename
-            ficha_medica: clienteMongo?.ficha_medica || null
+            id: cliente.id,
+            nombre: cliente.nombre,
+            correo_electronico: cliente.correo_electronico,
+            cedula_identidad: cliente.cedula_identidad,
+            numero_ayudas: cliente.numero_ayudas,
+            estado: cliente.estado,
+            fecha_nacimiento: cliente.fecha_nacimiento,
+            direccion: cliente.direccion,
+            fecha_creacion_sql: cliente.fecha_creacion,
+            fecha_modificacion_sql: cliente.fecha_modificacion,
+            foto_perfil: cliente.foto_perfil,
+            ficha_medica: cliente.ficha_medica
         };
         res.status(200).json(clienteCompleto);
     } catch (error) {
-        logger.error('Error al obtener el cliente:', error);
-        res.status(500).json({ error: 'Error interno del servidor al obtener el cliente.' });
+        logger.error('Error al obtener el cliente:', error.message);
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
-// 4. ACTUALIZAR CLIENTE (Usando SQL Directo)
+// 4. ACTUALIZAR CLIENTE
 clientesCtl.updateClient = async (req, res) => {
     const logger = getLogger(req);
-    // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
-    // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
     const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
-    const { nombre, correo_electronico, cedula_identidad, contrasena, fecha_nacimiento, direccion, estado, numero_ayudas, ficha_medica } = req.body;
-    logger.info(`[CLIENTE] Solicitud de actualización de cliente con ID: ${idCliente}`);
+    logger.info(`[CLIENTE] Solicitud de actualización (Hexagonal): ${idCliente}`);
 
     try {
-        // Verificar si el cliente existe en SQL y está activo
-        const [clientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE id = ? AND estado = 'activo'", [idCliente]);
-        if (clientesSQL.length === 0) {
-            logger.warn(`[CLIENTE] Cliente no encontrado para actualizar con ID: ${idCliente}`);
-            return res.status(404).json({ error: 'Cliente no encontrado o eliminado para actualizar.' });
-        }
-        const clienteSQL = clientesSQL[0];
+        const updatedCliente = await actualizarClienteUseCase.execute(idCliente, req.body);
 
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // Validar que el nuevo usuarioId (si se proporciona) exista y esté activo
-        // (Esta lógica no existe en clientes, pero se mantiene la estructura de validación)
-        // if (usuarioId !== undefined && usuarioId !== serviceSQL.usuarioId) { ... }
-
-        // Preparar datos para SQL (solo los que no son undefined)
-        const camposSQL = [];
-        const valoresSQL = [];
-
-        if (nombre !== undefined) {
-            camposSQL.push('nombre = ?');
-            valoresSQL.push(cifrarDato(nombre));
-        }
-        if (cedula_identidad !== undefined) {
-            // **Validación de unicidad para cedula_identidad en actualización**
-            const [allOtherClientesSQLCedula] = await sql.promise().query("SELECT id, cedula_identidad FROM clientes WHERE id != ? AND estado = 'activo'", [idCliente]);
-            const existingClienteWithNewCedula = allOtherClientesSQLCedula.find(c => safeDecrypt(c.cedula_identidad) === cedula_identidad);
-
-            if (existingClienteWithNewCedula) {
-                logger.warn(`[CLIENTE] Actualización fallida: La nueva cédula de identidad "${cedula_identidad}" ya está registrada por otro cliente.`);
-                return res.status(409).json({ message: 'La nueva cédula de identidad ya está registrada por otro cliente.' });
-            }
-            camposSQL.push('cedula_identidad = ?');
-            valoresSQL.push(cifrarDato(cedula_identidad));
-        }
-        if (estado !== undefined) {
-            camposSQL.push('estado = ?');
-            valoresSQL.push(estado);
-        }
-        if (numero_ayudas !== undefined) {
-            camposSQL.push('numero_ayudas = ?');
-            valoresSQL.push(numero_ayudas);
-        }
-        if (contrasena !== undefined) {
-            camposSQL.push('contrasena_hash = ?');
-            valoresSQL.push(cifrarDato(contrasena)); // Cifrado de contraseña con cifrarDato
-        }
-
-        // Si el correo se actualiza, verificar y actualizar el correo_electronico cifrado
-        if (correo_electronico !== undefined) {
-            // **Validación de unicidad para correo_electronico en actualización**
-            const [allOtherClientesSQLEmail] = await sql.promise().query("SELECT id, correo_electronico FROM clientes WHERE id != ? AND estado = 'activo'", [idCliente]);
-            const existingClienteWithNewEmail = allOtherClientesSQLEmail.find(c => safeDecrypt(c.correo_electronico) === correo_electronico);
-
-            if (existingClienteWithNewEmail) {
-                logger.warn(`[CLIENTE] Actualización fallida: El nuevo correo electrónico "${correo_electronico}" ya está registrado por otro cliente.`);
-                return res.status(409).json({ message: 'El nuevo correo electrónico ya está registrado por otro cliente.' });
-            }
-            camposSQL.push('correo_electronico = ?');
-            valoresSQL.push(cifrarDato(correo_electronico));
-        }
-
-        // Solo actualizar SQL si hay campos para actualizar
-        if (camposSQL.length > 0) {
-            // Siempre actualizar fecha_modificacion en SQL
-            camposSQL.push('fecha_modificacion = ?');
-            valoresSQL.push(formattedNow); // CAMBIO: Usar formattedNow
-
-            valoresSQL.push(idCliente); // Para el WHERE
-            const consultaSQL = `UPDATE clientes SET ${camposSQL.join(', ')} WHERE id = ?`;
-            const [resultadoSQLUpdate] = await sql.promise().query(consultaSQL, valoresSQL);
-
-            if (resultadoSQLUpdate.affectedRows === 0) {
-                logger.warn(`[CLIENTE] No se pudo actualizar el cliente SQL con ID: ${idCliente}.`);
-            } else {
-                logger.info(`[CLIENTE] Cliente SQL actualizado con ID: ${idCliente}`);
-            }
-        }
-
-        // Preparar datos para actualización en MongoDB
-        const updateDataMongo = {};
-        if (fecha_nacimiento !== undefined) updateDataMongo.fecha_nacimiento = fecha_nacimiento;
-        if (direccion !== undefined) updateDataMongo.direccion = cifrarDato(direccion); // Cifrar dirección en Mongo
-        // Replicar el estado si se actualiza en SQL
-        if (estado !== undefined) updateDataMongo.estado = estado;
-        if (ficha_medica !== undefined) updateDataMongo.ficha_medica = ficha_medica;
-
-        // Siempre actualizar fecha_modificacion en Mongo
-        updateDataMongo.fecha_modificacion = formattedNow; // CAMBIO: Usar formattedNow
-
-        // Realizar actualización en MongoDB
-        if (Object.keys(updateDataMongo).length > 0) {
-            await mongo.Cliente.updateOne({ idClienteSql: idCliente }, { $set: updateDataMongo });
-            logger.info(`[CLIENTE] Cliente Mongo actualizado para ID SQL: ${idCliente}`);
-        }
-
-        // Obtener el cliente actualizado para la respuesta (usando SQL directo y Mongo)
-        const [updatedClientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE id = ?", [idCliente]);
-        const updatedClienteSQL = updatedClientesSQL[0];
-        const updatedClienteMongo = await mongo.Cliente.findOne({ idClienteSql: idCliente });
+        logger.info(`[CLIENTE] Cliente actualizado con ID: ${idCliente}`);
 
         res.status(200).json({
             message: 'Cliente actualizado correctamente.',
             cliente: {
-                id: updatedClienteSQL.id,
-                nombre: safeDecrypt(updatedClienteSQL.nombre),
-                correo_electronico: safeDecrypt(updatedClienteSQL.correo_electronico),
-                cedula_identidad: safeDecrypt(updatedClienteSQL.cedula_identidad),
-                numero_ayudas: updatedClienteSQL.numero_ayudas,
-                estado: updatedClienteSQL.estado,
-                fecha_nacimiento: updatedClienteMongo?.fecha_nacimiento || null,
-                direccion: updatedClienteMongo ? safeDecrypt(updatedClienteMongo.direccion) : null,
-                ficha_medica: updatedClienteMongo?.ficha_medica || null
+                id: updatedCliente.id,
+                nombre: updatedCliente.nombre,
+                correo_electronico: updatedCliente.correo_electronico,
+                cedula_identidad: updatedCliente.cedula_identidad,
+                numero_ayudas: updatedCliente.numero_ayudas,
+                estado: updatedCliente.estado,
+                fecha_nacimiento: updatedCliente.fecha_nacimiento,
+                direccion: updatedCliente.direccion,
+                ficha_medica: updatedCliente.ficha_medica
             }
         });
-
     } catch (error) {
-        logger.error('Error al actualizar el cliente:', error);
-        res.status(500).json({ error: 'Error interno del servidor al actualizar el cliente.' });
+        logger.error('Error al actualizar el cliente:', error.message);
+        if (error.message.includes('No se proporcionaron')) return res.status(400).json({ message: error.message });
+        if (error.message.includes('no encontrado')) return res.status(404).json({ error: error.message });
+        if (error.message.includes('ya está registrada') || error.message.includes('ya está registrado')) return res.status(409).json({ message: error.message });
+
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
-// 5. ELIMINAR CLIENTE (Borrado Lógico - Usando SQL Directo)
+// 5. ELIMINAR CLIENTE
 clientesCtl.deleteClient = async (req, res) => {
     const logger = getLogger(req);
-    // Se usa req.session.clienteId si la solicitud viene de un cliente logueado para su propio perfil
-    // De lo contrario, se usa req.params.id para buscar por ID (ej. por un administrador)
     const idCliente = req.session.clienteId ? req.session.clienteId : req.params.id;
-    logger.info(`[CLIENTE] Solicitud de eliminación lógica de cliente con ID: ${idCliente}`);
+    logger.info(`[CLIENTE] Solicitud de eliminación (Hexagonal): ${idCliente}`);
 
     try {
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // SQL directo para actualizar estado a 'eliminado'
-        const [resultadoSQL] = await sql.promise().query("UPDATE clientes SET estado = 'eliminado', fecha_modificacion = ? WHERE id = ? AND estado = 'activo'", [formattedNow, idCliente]);
-
-        if (resultadoSQL.affectedRows === 0) {
-            logger.warn(`[CLIENTE] Cliente no encontrado o ya eliminado con ID: ${idCliente}`);
-            return res.status(404).json({ error: 'Cliente no encontrado o ya estaba eliminado.' });
-        }
-        logger.info(`[CLIENTE] Cliente SQL marcado como eliminado con ID: ${idCliente}`);
-
-        // Actualizar estado a 'eliminado' en MongoDB
-        await mongo.Cliente.updateOne(
-            { idClienteSql: idCliente },
-            { $set: { estado: 'eliminado', fecha_modificacion: formattedNow } }
-        );
-        logger.info(`[CLIENTE] Cliente Mongo marcado como eliminado para ID SQL: ${idCliente}`);
-
+        await eliminarClienteUseCase.execute(idCliente);
+        logger.info(`[CLIENTE] Cliente eliminado: ${idCliente}`);
         res.status(200).json({ message: 'Cliente marcado como eliminado exitosamente.' });
     } catch (error) {
-        logger.error('Error al eliminar el cliente:', error);
-        res.status(500).json({ error: 'Error interno del servidor al eliminar el cliente.' });
+        logger.error('Error al eliminar el cliente:', error.message);
+        if (error.message.includes('no encontrado')) return res.status(404).json({ error: error.message });
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
-// 6. LOGIN CLIENTE (Con correo y contraseña - Usando SQL Directo)
+// 6. LOGIN CLIENTE
 clientesCtl.loginClient = async (req, res) => {
     const logger = getLogger(req);
     const { correo_electronico, contrasena, deviceId, tipo_dispositivo, modelo_dispositivo } = req.body;
-    logger.info(`[CLIENTE] Intento de login: correo=${correo_electronico}`);
+    logger.info(`[CLIENTE] Intento de login (Hexagonal): correo=${correo_electronico}`);
 
     try {
-        if (!correo_electronico || !contrasena) {
-            logger.warn('[CLIENTE] Login fallido: correo o contraseña faltantes.');
-            return res.status(400).json({ success: false, message: 'Correo y contraseña son requeridos.' });
-        }
+        const dispositivoData = { deviceId, tipo_dispositivo, modelo_dispositivo };
+        const cliente = await loginClienteUseCase.execute(correo_electronico, contrasena, dispositivoData);
 
-        // Buscar cliente por correo electrónico (descifrando y comparando)
-        const [allClientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE estado = 'activo'");
-        const clienteSQL = allClientesSQL.find(c => safeDecrypt(c.correo_electronico) === correo_electronico);
-
-        if (!clienteSQL) {
-            logger.warn(`[CLIENTE] Login fallido: Cliente no encontrado o inactivo para el correo "${correo_electronico}".`);
-            return res.status(401).json({ success: false, message: 'Credenciales incorrectas o cliente inactivo.' });
-        }
-        logger.info(`[CLIENTE] Cliente encontrado en SQL con ID: ${clienteSQL.id}`);
-
-        // Comparar la contraseña descifrando
-        const contrasena_descifrada = descifrarDato(clienteSQL.contrasena_hash);
-        if (contrasena !== contrasena_descifrada) {
-            logger.warn(`[CLIENTE] Login fallido: Contraseña incorrecta para cliente ID: ${clienteSQL.id}.`);
-            return res.status(401).json({ success: false, message: 'Credenciales incorrectas.' });
-        }
-        logger.info(`[CLIENTE] Contraseña verificada para cliente ID: ${clienteSQL.id}.`);
-
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // Lógica de registro/actualización de dispositivo (adaptada de tu código original y usando SQL directo)
-        if (deviceId && tipo_dispositivo && modelo_dispositivo) {
-            logger.info(`[DISPOSITIVO] Gestionando dispositivo para cliente ${clienteSQL.id} durante el login.`);
-
-            let dispositivoDelCliente = null;
-            let dispositivoDeOtroClienteActivo = null;
-
-            // Obtener todos los dispositivos y buscar coincidencias
-            const [allDevicesSQL] = await sql.promise().query("SELECT * FROM dispositivos");
-            for (const disp of allDevicesSQL) {
-                try {
-                    const decryptedDeviceId = descifrarDato(disp.token_dispositivo);
-                    if (decryptedDeviceId === deviceId) {
-                        if (disp.clienteId === clienteSQL.id) {
-                            dispositivoDelCliente = disp;
-                        } else if (disp.estado === 'activo') {
-                            dispositivoDeOtroClienteActivo = disp;
-                        }
-                    }
-                } catch (decryptionError) {
-                    logger.error(`[DISPOSITIVO] Error al descifrar token_dispositivo durante device-login: ${decryptionError.message}`);
-                }
-            }
-
-            // 1. Desactivar el dispositivo si pertenece a otro cliente y está activo
-            if (dispositivoDeOtroClienteActivo) {
-                logger.warn(`[DISPOSITIVO] Dispositivo "${deviceId}" ya estaba activo para otro cliente (${dispositivoDeOtroClienteActivo.clienteId}). Desactivándolo.`);
-                await sql.promise().query("UPDATE dispositivos SET estado = 'inactivo', fecha_modificacion = ? WHERE id = ?", [formattedNow, dispositivoDeOtroClienteActivo.id]);
-            }
-
-            // 2. Activar o crear el dispositivo para el cliente actual
-            if (dispositivoDelCliente) {
-                if (dispositivoDelCliente.estado === 'inactivo') {
-                    logger.info(`[DISPOSITIVO] Reactivando dispositivo para cliente ${clienteSQL.id}.`);
-                    await sql.promise().query("UPDATE dispositivos SET estado = 'activo', fecha_modificacion = ? WHERE id = ?", [formattedNow, dispositivoDelCliente.id]);
-                } else {
-                    logger.info(`[DISPOSITIVO] Dispositivo ya activo para cliente ${clienteSQL.id}.`);
-                }
-            } else {
-                // No existe un dispositivo para este cliente, crearlo
-                logger.info(`[DISPOSITIVO] Creando nuevo registro de dispositivo para cliente ${clienteSQL.id}.`);
-                // fecha_modificacion NO se incluye en la creación, se actualizará en modificaciones
-                await sql.promise().query(
-                    "INSERT INTO dispositivos (clienteId, token_dispositivo, tipo_dispositivo, modelo_dispositivo, estado, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?)",
-                    [clienteSQL.id, cifrarDato(deviceId), cifrarDato(tipo_dispositivo), cifrarDato(modelo_dispositivo), 'activo', formattedNow]
-                );
-            }
-        } else {
-            logger.info(`[DISPOSITIVO] No se recibieron datos de dispositivo para registrar/actualizar durante el login.`);
-        }
-
-        // Guardar información en la sesión (como en usuario.controller.js)
-        req.session.clienteId = clienteSQL.id;
-        req.session.clienteNombre = safeDecrypt(clienteSQL.nombre);
-        req.session.clienteEmail = safeDecrypt(clienteSQL.correo_electronico);
+        // Session logic
+        req.session.clienteId = cliente.id;
+        req.session.clienteNombre = cliente.nombre;
+        req.session.clienteEmail = cliente.correo_electronico;
         req.session.tipoUsuario = 'cliente';
-        logger.info(`[CLIENTE] Sesión establecida para cliente ID: ${clienteSQL.id}.`);
+
+        logger.info(`[CLIENTE] Login exitoso para ID: ${cliente.id}`);
 
         res.status(200).json({
             success: true,
             message: 'Inicio de sesión exitoso',
             user: {
-                id: clienteSQL.id,
-                nombre: safeDecrypt(clienteSQL.nombre),
-                email: safeDecrypt(clienteSQL.correo_electronico)
+                id: cliente.id,
+                nombre: cliente.nombre,
+                email: cliente.correo_electronico
             }
         });
-
     } catch (error) {
         logger.error('Error en el login del cliente:', error.message);
+        if (error.message.includes('requeridos')) return res.status(400).json({ success: false, message: error.message });
+        if (error.message.includes('Credenciales') || error.message.includes('inactivo')) {
+            return res.status(401).json({ success: false, message: error.message });
+        }
         res.status(500).json({ success: false, message: 'Error interno del servidor en el login.' });
     }
 };
 
-// 7. LOGIN POR DEVICE ID (Usando SQL Directo)
+// 7. LOGIN POR DEVICE ID
 clientesCtl.deviceLoginHandler = async (req, res) => {
     const logger = getLogger(req);
     const { deviceId } = req.body;
-    logger.info(`[CLIENTE] Intento de device-login con deviceId: ${deviceId}`);
+    logger.info(`[CLIENTE] Intento de device-login (Hexagonal): ${deviceId}`);
 
     try {
-        if (!deviceId) {
-            logger.warn('[CLIENTE] Device-login fallido: deviceId faltante.');
-            return res.status(400).json({ success: false, message: 'deviceId es requerido.' });
-        }
+        const cliente = await loginDeviceUseCase.execute(deviceId);
 
-        let dispositivoEncontrado = null;
-        // Buscar el dispositivo más reciente que coincida con el deviceId y esté activo
-        const [dispositivosActivosSQL] = await sql.promise().query("SELECT * FROM dispositivos WHERE estado = 'activo' ORDER BY fecha_creacion DESC");
-
-        for (const disp of dispositivosActivosSQL) {
-            try {
-                const decryptedDeviceId = descifrarDato(disp.token_dispositivo);
-                if (decryptedDeviceId === deviceId) {
-                    dispositivoEncontrado = disp;
-                    break; // Encontrado el más reciente
-                }
-            } catch (decryptionError) {
-                logger.error(`[DISPOSITIVO] Error al descifrar token_dispositivo durante device-login: ${decryptionError.message}`);
-            }
-        }
-
-        if (!dispositivoEncontrado) {
-            logger.warn(`[CLIENTE] Device-login fallido: deviceId "${deviceId}" no encontrado o no activo.`);
-            return res.status(401).json({ success: false, message: 'Dispositivo no autorizado o inactivo.' });
-        }
-        logger.info(`[CLIENTE] Dispositivo encontrado (ID: ${dispositivoEncontrado.id}) para deviceId: ${deviceId}.`);
-
-        // Buscar el cliente asociado
-        const [clientesSQL] = await sql.promise().query("SELECT * FROM clientes WHERE id = ? AND estado = 'activo'", [dispositivoEncontrado.clienteId]);
-        const clienteSQL = clientesSQL[0];
-
-        if (!clienteSQL) {
-            logger.warn(`[CLIENTE] Device-login fallido: Cliente asociado (ID: ${dispositivoEncontrado.clienteId}) no encontrado o inactivo.`);
-            return res.status(401).json({ success: false, message: 'Cliente asociado no encontrado o inactivo.' });
-        }
-        logger.info(`[CLIENTE] Cliente asociado encontrado para device-login (ID: ${clienteSQL.id}).`);
-
-        // Guardar información en la sesión (como en usuario.controller.js)
-        req.session.clienteId = clienteSQL.id;
-        req.session.clienteNombre = safeDecrypt(clienteSQL.nombre);
-        req.session.clienteEmail = safeDecrypt(clienteSQL.correo_electronico);
+        req.session.clienteId = cliente.id;
+        req.session.clienteNombre = cliente.nombre;
+        req.session.clienteEmail = cliente.correo_electronico;
         req.session.tipoUsuario = 'cliente';
-        logger.info(`[CLIENTE] Sesión establecida para device-login de cliente ID: ${clienteSQL.id}.`);
+
+        logger.info(`[CLIENTE] Device-login exitoso para ID: ${cliente.id}`);
 
         res.status(200).json({
             success: true,
             message: 'Device login exitoso',
             user: {
-                id: clienteSQL.id,
-                nombre: safeDecrypt(clienteSQL.nombre),
-                email: safeDecrypt(clienteSQL.correo_electronico)
+                id: cliente.id,
+                nombre: cliente.nombre,
+                email: cliente.correo_electronico
             }
         });
-
     } catch (error) {
-        logger.error('Error en el device-login del cliente:', error.message);
-        res.status(500).json({ success: false, message: 'Error interno del servidor en device login.' });
+        logger.error('Error en el device-login:', error.message);
+        if (error.message.includes('requerido')) return res.status(400).json({ success: false, message: error.message });
+        if (error.message.includes('No autorizado') || error.message.includes('inactivo')) {
+            return res.status(401).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
 };
 
@@ -584,126 +255,41 @@ clientesCtl.deviceLoginHandler = async (req, res) => {
 clientesCtl.uploadProfilePicture = async (req, res) => {
     const logger = getLogger(req);
     const { id } = req.params;
-    logger.info(`[CLIENTE] Solicitud de subida de foto de perfil para cliente ID: ${id}`);
+
+    if (!req.file) {
+        return res.status(400).json({ message: 'No se subió ningún archivo.' });
+    }
+
+    const filename = req.file.filename;
+    logger.info(`[CLIENTE] Subida de foto (Hexagonal): ID=${id}, file=${filename}`);
 
     try {
-        if (!req.file) {
-            logger.warn('[CLIENTE] Subida fallida: No se proporcionó ningún archivo.');
-            return res.status(400).json({ message: 'No se subió ningún archivo.' });
-        }
-
-        const filename = req.file.filename;
-        const now = new Date();
-        const formattedNow = formatLocalDateTime(now);
-
-        // Actualizar el campo foto_perfil en SQL
-        const [resultSQL] = await sql.promise().query(
-            "UPDATE clientes SET foto_perfil = ?, fecha_modificacion = ? WHERE id = ?",
-            [filename, formattedNow, id]
-        );
-
-        if (resultSQL.affectedRows === 0) {
-            logger.warn(`[CLIENTE] No se encontró cliente activo para actualizar foto ID: ${id}`);
-            // Opcional: Borrar el archivo si no se pudo vincular
-            // fs.unlink...
-            return res.status(404).json({ message: 'Cliente no encontrado.' });
-        }
-
-        // También actualizar en Mongo si es necesario (opcional para mantener sincronía)
-        // ...
-
-        logger.info(`[CLIENTE] Foto de perfil actualizada para cliente ID: ${id}, archivo: ${filename}`);
-
-        // Construir URL completa si es necesario, o devolver solo el filename
-        const fileUrl = `/uploads/profiles/${filename}`;
-
+        const fileUrl = await subirFotoPerfilClienteUseCase.execute(id, filename);
         res.status(200).json({
             message: 'Foto de perfil actualizada correctamente.',
             foto_perfil: filename,
             fileUrl: fileUrl
         });
-
     } catch (error) {
-        logger.error('Error al subir foto de perfil:', error);
+        logger.error('Error al subir foto de perfil:', error.message);
+        if (error.message.includes('no encontrado')) return res.status(404).json({ message: error.message });
         res.status(500).json({ error: 'Error interno al subir la imagen.' });
     }
 };
 
-// 9. OBTENER ESTADÍSTICAS DEL CLIENTE PARA DASHBOARD
+// 9. OBTENER ESTADÍSTICAS
 clientesCtl.getClientStats = async (req, res) => {
     const logger = getLogger(req);
     const { id } = req.params;
-    logger.info(`[CLIENTE] Solicitud de estadísticas para cliente ID: ${id}`);
 
     try {
-        // Importar modelo de Alertas (MongoDB)
-        const Alerta = require('../../../domain/models/alertas.model');
-
-        // 1. Alertas activas (MongoDB) - estados no cerrados
-        const alertasActivas = await Alerta.countDocuments({
-            idUsuarioSql: id.toString(),
-            estado: { $in: ['CREADA', 'NOTIFICADA', 'ATENDIDA'] }
-        });
-        logger.info(`[CLIENTE] Alertas activas: ${alertasActivas}`);
-
-        // 2. Alertas resueltas (MongoDB) - estados cerrados
-        const alertasResueltas = await Alerta.countDocuments({
-            idUsuarioSql: id.toString(),
-            estado: { $in: ['CERRADA', 'CANCELADA'] }
-        });
-        logger.info(`[CLIENTE] Alertas resueltas: ${alertasResueltas}`);
-
-        // 3. Número de contactos (SQL)
-        // CAMBIO: Consultar la tabla 'contactos_emergencias' para ver cuántos tiene registrados,
-        // en lugar de 'contactos_clientes' que parece ser transaccional/notificaciones.
-        const [contactosResult] = await sql.promise().query(
-            "SELECT COUNT(*) as total FROM contactos_emergencias WHERE clienteId = ? AND estado IN ('activo', 'VINCULADO')",
-            [id]
-        );
-        const contactos = contactosResult[0]?.total || 0;
-        logger.info(`[CLIENTE] Contactos registrados: ${contactos}`);
-
-        // 4. Tiempo de respuesta promedio (calculado desde historial de estados)
-        let tiempoRespuestaPromedio = 0;
-        try {
-            const alertasConRespuesta = await Alerta.find({
-                idUsuarioSql: id.toString(),
-                'historial_estados.1': { $exists: true } // Al menos 2 estados
-            });
-
-            if (alertasConRespuesta.length > 0) {
-                let sumaTiempos = 0;
-                let count = 0;
-                alertasConRespuesta.forEach(alerta => {
-                    if (alerta.historial_estados.length >= 2) {
-                        const t1 = new Date(alerta.historial_estados[0].fecha || alerta.fecha_creacion);
-                        const t2 = new Date(alerta.historial_estados[1].fecha);
-                        const diff = (t2 - t1) / 1000; // segundos
-                        if (diff > 0 && diff < 3600) { // Solo si es razonable (< 1 hora)
-                            sumaTiempos += diff;
-                            count++;
-                        }
-                    }
-                });
-                tiempoRespuestaPromedio = count > 0 ? Math.round(sumaTiempos / count) : 0;
-            }
-        } catch (avgError) {
-            logger.warn(`[CLIENTE] Error calculando tiempo promedio: ${avgError.message}`);
-        }
-        logger.info(`[CLIENTE] Tiempo respuesta promedio: ${tiempoRespuestaPromedio}s`);
-
+        const stats = await obtenerEstadisticasClienteUseCase.execute(id);
         res.status(200).json({
             success: true,
-            stats: {
-                alertasActivas,
-                alertasResueltas,
-                contactos,
-                tiempoRespuestaPromedio
-            }
+            stats
         });
-
     } catch (error) {
-        logger.error(`[CLIENTE] Error obteniendo estadísticas: ${error.message}`, error);
+        logger.error(`[CLIENTE] Error obteniendo estadísticas: ${error.message}`);
         res.status(500).json({ error: 'Error interno al obtener estadísticas.' });
     }
 };

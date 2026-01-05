@@ -1,32 +1,32 @@
-// Importa los modelos y utilidades necesarias
-const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL) - Necesario para la relación y el modelo
-const sql = require('../../database/connection/dataBase.sql'); // Para MySQL directo
-const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates');
+const MysqlContactoEmergenciaRepository = require('../../adapters/secondary/database/MysqlContactoEmergenciaRepository');
+const MysqlMongoClienteRepository = require('../../adapters/secondary/database/MysqlMongoClienteRepository');
+
+const CrearContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/CrearContactoEmergencia');
+const ListarContactosEmergencia = require('../../../../application/use-cases/contacto_emergencia/ListarContactosEmergencia');
+const ObtenerContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/ObtenerContactoEmergencia');
+const ObtenerContactosPorCliente = require('../../../../application/use-cases/contacto_emergencia/ObtenerContactosPorCliente');
+const ActualizarContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/ActualizarContactoEmergencia');
+const EliminarContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/EliminarContactoEmergencia');
+const SolicitarVinculacionContacto = require('../../../../application/use-cases/contacto_emergencia/SolicitarVinculacionContacto');
+const ResponderVinculacionContacto = require('../../../../application/use-cases/contacto_emergencia/ResponderVinculacionContacto');
+const ListarSolicitudesPendientes = require('../../../../application/use-cases/contacto_emergencia/ListarSolicitudesPendientes');
+
+// --- Dependency Injection ---
+const contactoEmergenciaRepository = new MysqlContactoEmergenciaRepository();
+const clienteRepository = new MysqlMongoClienteRepository();
+
+const crearContactoEmergenciaUseCase = new CrearContactoEmergencia(contactoEmergenciaRepository);
+const listarContactosEmergenciaUseCase = new ListarContactosEmergencia(contactoEmergenciaRepository);
+const obtenerContactoEmergenciaUseCase = new ObtenerContactoEmergencia(contactoEmergenciaRepository);
+const obtenerContactosPorClienteUseCase = new ObtenerContactosPorCliente(contactoEmergenciaRepository);
+const actualizarContactoEmergenciaUseCase = new ActualizarContactoEmergencia(contactoEmergenciaRepository);
+const eliminarContactoEmergenciaUseCase = new EliminarContactoEmergencia(contactoEmergenciaRepository);
+const solicitarVinculacionContactoUseCase = new SolicitarVinculacionContacto(contactoEmergenciaRepository, clienteRepository);
+const responderVinculacionContactoUseCase = new ResponderVinculacionContacto(contactoEmergenciaRepository, clienteRepository);
+const listarSolicitudesPendientesUseCase = new ListarSolicitudesPendientes(contactoEmergenciaRepository);
 
 const contactosEmergenciasCtl = {};
 
-// --- Utilidad para Descifrado Seguro ---
-function safeDecrypt(data) {
-    try {
-        return data ? descifrarDato(data) : '';
-    } catch (error) {
-        console.error('Error al descifrar datos:', error.message);
-        return '';
-    }
-}
-
-// Función para formatear una fecha a 'YYYY-MM-DD HH:mm:ss'
-function formatLocalDateTime(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses son 0-index
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-// Utilidad para obtener el logger
 function getLogger(req) {
     return req.app && req.app.get ? req.app.get('logger') : console;
 }
@@ -34,74 +34,38 @@ function getLogger(req) {
 // 1. CREAR UN NUEVO CONTACTO DE EMERGENCIA
 contactosEmergenciasCtl.createEmergencyContact = async (req, res) => {
     const logger = getLogger(req);
-    const { clienteId, nombre, relacion, numero, telefono, descripcion, estado } = req.body;
+    const { clienteId, nombre } = req.body;
 
-    // Usar 'numero' si existe, sino usar 'telefono' para compatibilidad
-    const phone = numero || telefono;
-    // Usar 'relacion' si existe, sino usar 'descripcion' para compatibilidad
-    const desc = relacion || descripcion;
-
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de creación de contacto para clienteId: ${clienteId}, nombre: ${nombre}`);
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de creación (Hexagonal) para clienteId: ${clienteId}, nombre: ${nombre}`);
 
     try {
-        // Validar campos obligatorios
-        if (!clienteId || !nombre || !phone) {
-            logger.warn('[CONTACTOS_EMERGENCIA] Creación fallida: campos obligatorios faltantes.');
-            return res.status(400).json({ message: 'Los campos clienteId, nombre y número/teléfono son requeridos.' });
-        }
+        const createdContact = await crearContactoEmergenciaUseCase.execute(req.body);
 
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // Cifrar los datos sensibles
-        const nombreCifrado = cifrarDato(nombre);
-        const telefonoCifrado = cifrarDato(phone);
-        const descripcionCifrada = cifrarDato(desc);
-
-        // Verificar si el contacto ya existe para ese cliente y nombre (usando SQL directo)
-        const [contactoExistenteSQL] = await sql.promise().query(
-            "SELECT id FROM contactos_emergencias WHERE clienteId = ? AND nombre = ? AND estado = 'activo'",
-            [clienteId, nombreCifrado]
-        );
-
-        if (contactoExistenteSQL.length > 0) {
-            logger.warn(`[CONTACTOS_EMERGENCIA] Error: Contacto duplicado para clienteId=${clienteId}, nombre=${nombre}.`);
-            return res.status(409).json({ message: 'El contacto de emergencia ya está registrado para este cliente con ese nombre.' });
-        }
-
-        // Crear el nuevo contacto usando ORM (como usuario.controller.js)
-        const nuevoContacto = await orm.contactos_emergencia.create({
-            clienteId: clienteId,
-            nombre: nombreCifrado,
-            descripcion: descripcionCifrada,
-            telefono: telefonoCifrado,
-            estado: estado || 'activo',
-            fecha_creacion: formattedNow, // Se añade la fecha de creación (hora local formateada)
-        });
-
-        const newContactId = nuevoContacto.id; // Obtener el ID insertado por ORM
-        logger.info(`[CONTACTOS_EMERGENCIA] Contacto creado exitosamente con ID: ${newContactId} para clienteId: ${clienteId}.`);
-
-        // Obtener el contacto recién creado para la respuesta
-        const [createdContactSQL] = await sql.promise().query("SELECT * FROM contactos_emergencias WHERE id = ?", [newContactId]);
-        const createdContact = createdContactSQL[0];
+        logger.info(`[CONTACTOS_EMERGENCIA] Contacto creado exitosamente con ID: ${createdContact.id}.`);
 
         res.status(201).json({
             message: 'Contacto de emergencia registrado exitosamente.',
             contactoEmergencia: {
                 id: createdContact.id,
                 clienteId: createdContact.clienteId,
-                nombre: safeDecrypt(createdContact.nombre),
-                descripcion: safeDecrypt(createdContact.descripcion),
-                telefono: safeDecrypt(createdContact.telefono),
+                nombre: createdContact.nombre,
+                descripcion: createdContact.descripcion,
+                telefono: createdContact.telefono,
                 estado: createdContact.estado,
                 fecha_creacion: createdContact.fecha_creacion,
-                fecha_modificacion: createdContact.fecha_modificacion // Puede ser null si no se ha modificado
+                fecha_modificacion: createdContact.fecha_modificacion
             }
         });
     } catch (error) {
-        logger.error(`[CONTACTOS_EMERGENCIA] Error al crear contacto: ${error.message}`, error);
+        logger.error(`[CONTACTOS_EMERGENCIA] Error al crear contacto: ${error.message}`);
+
+        if (error.message.includes('requeridos') || error.message.includes('No se proporcionaron')) {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message.includes('ya está registrado')) {
+            return res.status(409).json({ message: error.message });
+        }
+
         res.status(500).json({ error: 'Error interno del servidor al crear el contacto de emergencia.' });
     }
 };
@@ -109,93 +73,58 @@ contactosEmergenciasCtl.createEmergencyContact = async (req, res) => {
 // 2. OBTENER TODOS LOS CONTACTOS DE EMERGENCIA ACTIVOS
 contactosEmergenciasCtl.getAllEmergencyContacts = async (req, res) => {
     const logger = getLogger(req);
-    const { incluirEliminados } = req.query; // Añadido para consistencia
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de obtención de todos los contactos de emergencia (incluirEliminados: ${incluirEliminados}).`);
+    const { incluirEliminados } = req.query;
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de obtención de todos (Hexagonal).`);
 
     try {
-        let querySQL = `SELECT 
-                            ce.id, 
-                            ce.clienteId, 
-                            ce.nombre, 
-                            ce.descripcion, 
-                            ce.telefono, 
-                            ce.estado, 
-                            ce.fecha_creacion, 
-                            ce.fecha_modificacion,
-                            c.nombre AS cliente_nombre,
-                            c.correo_electronico AS cliente_correo
-                        FROM 
-                            contactos_emergencias ce
-                        JOIN 
-                            clientes c ON ce.clienteId = c.id`;
+        const contactos = await listarContactosEmergenciaUseCase.execute(incluirEliminados === 'true');
 
-        const params = [];
-        if (!incluirEliminados) {
-            querySQL += ` WHERE ce.estado IN ('activo', 'VINCULADO')`;
-        }
-        querySQL += ` ORDER BY ce.fecha_creacion DESC`; // Ordenar para consistencia
-
-        const [contactosSQL] = await sql.promise().query(querySQL, params);
-
-        // Descifrar los datos sensibles antes de enviar
-        const contactosCompletos = contactosSQL.map(contactSQL => ({
-            id: contactSQL.id,
-            clienteId: contactSQL.clienteId,
-            nombre: safeDecrypt(contactSQL.nombre),
-            descripcion: safeDecrypt(contactSQL.descripcion),
-            telefono: safeDecrypt(contactSQL.telefono),
-            estado: contactSQL.estado,
-            fecha_creacion: contactSQL.fecha_creacion,
-            fecha_modificacion: contactSQL.fecha_modificacion,
-            cliente_info: {
-                nombre: safeDecrypt(contactSQL.cliente_nombre),
-                correo_electronico: safeDecrypt(contactSQL.cliente_correo)
-            }
+        // Map to legacy response structure
+        const contactosCompletos = contactos.map(c => ({
+            id: c.id,
+            clienteId: c.clienteId,
+            nombre: c.nombre,
+            descripcion: c.descripcion,
+            telefono: c.telefono,
+            estado: c.estado,
+            fecha_creacion: c.fecha_creacion,
+            fecha_modificacion: c.fecha_modificacion,
+            cliente_info: c.cliente_info || {}
         }));
 
         logger.info(`[CONTACTOS_EMERGENCIA] Se devolvieron ${contactosCompletos.length} contactos de emergencia.`);
         res.status(200).json(contactosCompletos);
     } catch (error) {
         logger.error('Error al obtener los contactos de emergencia:', error.message);
-        res.status(500).json({ error: 'Error interno del servidor al obtener los contactos de emergencia.' });
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
 // 3. OBTENER CONTACTOS DE EMERGENCIA POR ID DE CLIENTE
 contactosEmergenciasCtl.getContactsByClientId = async (req, res) => {
     const logger = getLogger(req);
-    const { clienteId } = req.params; // Usamos clienteId para el parámetro de ruta
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de contactos de emergencia para clienteId: ${clienteId}`);
+    const { clienteId } = req.params;
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de contactos para clienteId (Hexagonal): ${clienteId}`);
 
     try {
-        // Usar ORM (Sequelize) en lugar de SQL directo para mayor estabilidad
-        const { Op } = require('sequelize'); // Asegúrate de importar Op si no está, o usa array directo si Sequelize lo soporta
-        // ...
-        const contactos = await orm.contactos_emergencia.findAll({
-            where: {
-                clienteId: clienteId,
-                estado: ['activo', 'VINCULADO'] // Permitir ambos estados
-            },
-            order: [['fecha_creacion', 'DESC']]
-        });
+        const contactos = await obtenerContactosPorClienteUseCase.execute(clienteId);
 
-        // Descifrar los datos antes de enviar
-        const contactosDescifrados = contactos.map(contact => ({
-            id: contact.id,
-            clienteId: contact.clienteId,
-            nombre: safeDecrypt(contact.nombre),
-            descripcion: safeDecrypt(contact.descripcion),
-            telefono: safeDecrypt(contact.telefono),
-            estado: contact.estado,
-            fecha_creacion: contact.fecha_creacion,
-            fecha_modificacion: contact.fecha_modificacion
+        const contactosResponse = contactos.map(c => ({
+            id: c.id,
+            clienteId: c.clienteId,
+            nombre: c.nombre,
+            descripcion: c.descripcion,
+            telefono: c.telefono,
+            estado: c.estado,
+            fecha_creacion: c.fecha_creacion,
+            fecha_modificacion: c.fecha_modificacion
         }));
 
-        logger.info(`[CONTACTOS_EMERGENCIA] Se devolvieron ${contactosDescifrados.length} contactos para clienteId: ${clienteId}.`);
-        res.status(200).json(contactosDescifrados);
+        logger.info(`[CONTACTOS_EMERGENCIA] Se devolvieron ${contactosResponse.length} contactos.`);
+        res.status(200).json(contactosResponse);
     } catch (error) {
         logger.error('Error al obtener los contactos de emergencia del cliente:', error.message);
-        res.status(500).json({ error: 'Error interno del servidor al obtener los contactos de emergencia del cliente.' });
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
@@ -203,33 +132,31 @@ contactosEmergenciasCtl.getContactsByClientId = async (req, res) => {
 contactosEmergenciasCtl.getEmergencyContactById = async (req, res) => {
     const logger = getLogger(req);
     const { id } = req.params;
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de obtención de contacto por ID: ${id}`);
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de obtención por ID (Hexagonal): ${id}`);
 
     try {
-        // Usar SQL directo para obtener el contacto por ID
-        const [contactoSQL] = await sql.promise().query("SELECT * FROM contactos_emergencias WHERE id = ? AND estado = 'activo'", [id]);
+        const contacto = await obtenerContactoEmergenciaUseCase.execute(id);
 
-        if (contactoSQL.length === 0) {
-            logger.warn(`[CONTACTOS_EMERGENCIA] Contacto de emergencia no encontrado o inactivo con ID: ${id}`);
+        if (!contacto) {
+            logger.warn(`[CONTACTOS_EMERGENCIA] Contacto no encontrado: ${id}`);
             return res.status(404).json({ error: 'Contacto de emergencia no encontrado o inactivo.' });
         }
 
-        const contacto = contactoSQL[0];
-        logger.info(`[CONTACTOS_EMERGENCIA] Contacto de emergencia encontrado con ID: ${id}.`);
+        logger.info(`[CONTACTOS_EMERGENCIA] Contacto encontrado: ${id}.`);
 
         res.status(200).json({
             id: contacto.id,
             clienteId: contacto.clienteId,
-            nombre: safeDecrypt(contacto.nombre),
-            descripcion: safeDecrypt(contacto.descripcion),
-            telefono: safeDecrypt(contacto.telefono),
+            nombre: contacto.nombre,
+            descripcion: contacto.descripcion,
+            telefono: contacto.telefono,
             estado: contacto.estado,
             fecha_creacion: contacto.fecha_creacion,
             fecha_modificacion: contacto.fecha_modificacion
         });
     } catch (error) {
         logger.error('Error al obtener el contacto de emergencia:', error.message);
-        res.status(500).json({ error: 'Error interno del servidor al obtener el contacto de emergencia.' });
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
@@ -237,80 +164,21 @@ contactosEmergenciasCtl.getEmergencyContactById = async (req, res) => {
 contactosEmergenciasCtl.updateEmergencyContact = async (req, res) => {
     const logger = getLogger(req);
     const { id } = req.params;
-    const { nombre, relacion, numero, telefono, descripcion, estado } = req.body;
-
-    // Usar 'numero' si existe, sino usar 'telefono' para compatibilidad
-    const phone = numero || telefono;
-    // Usar 'relacion' si existe, sino usar 'descripcion' para compatibilidad
-    const desc = relacion || descripcion;
-
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de actualización de contacto con ID: ${id}`);
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de actualización (Hexagonal): ${id}`);
 
     try {
-        // Verificar si el contacto existe y está activo
-        const [existingContactSQL] = await sql.promise().query("SELECT * FROM contactos_emergencias WHERE id = ? AND estado = 'activo'", [id]);
-        if (existingContactSQL.length === 0) {
-            logger.warn(`[CONTACTOS_EMERGENCIA] Contacto de emergencia no encontrado o inactivo para actualizar con ID: ${id}`);
-            return res.status(404).json({ error: 'Contacto de emergencia no encontrado o inactivo para actualizar.' });
-        }
-        const contactoExistente = existingContactSQL[0];
+        const updatedContact = await actualizarContactoEmergenciaUseCase.execute(id, req.body);
 
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // Preparar datos para SQL (solo los que no son undefined)
-        const camposSQL = [];
-        const valoresSQL = [];
-
-        if (nombre !== undefined) {
-            camposSQL.push('nombre = ?');
-            valoresSQL.push(cifrarDato(nombre));
-        }
-        if (desc !== undefined) {
-            camposSQL.push('descripcion = ?');
-            valoresSQL.push(cifrarDato(desc));
-        }
-        if (phone !== undefined) {
-            camposSQL.push('telefono = ?');
-            valoresSQL.push(cifrarDato(phone));
-        }
-        if (estado !== undefined) {
-            camposSQL.push('estado = ?');
-            valoresSQL.push(estado);
-        }
-
-        if (camposSQL.length === 0) {
-            logger.warn(`[CONTACTOS_EMERGENCIA] No se proporcionaron campos para actualizar el contacto con ID: ${id}.`);
-            return res.status(400).json({ message: 'No se proporcionaron campos para actualizar.' });
-        }
-
-        // Siempre actualizar fecha_modificacion en SQL
-        camposSQL.push('fecha_modificacion = ?');
-        valoresSQL.push(formattedNow);
-
-        valoresSQL.push(id); // Para el WHERE
-        const consultaSQL = `UPDATE contactos_emergencias SET ${camposSQL.join(', ')} WHERE id = ?`;
-        const [resultadoSQLUpdate] = await sql.promise().query(consultaSQL, valoresSQL);
-
-        if (resultadoSQLUpdate.affectedRows === 0) {
-            logger.warn(`[CONTACTOS_EMERGENCIA] No se pudo actualizar el contacto de emergencia SQL con ID: ${id}.`);
-        } else {
-            logger.info(`[CONTACTOS_EMERGENCIA] Contacto de emergencia SQL actualizado con ID: ${id}`);
-        }
-
-        // Obtener el contacto actualizado para la respuesta
-        const [updatedContactSQL] = await sql.promise().query("SELECT * FROM contactos_emergencias WHERE id = ?", [id]);
-        const updatedContact = updatedContactSQL[0];
+        logger.info(`[CONTACTOS_EMERGENCIA] Contacto actualizado con ID: ${id}`);
 
         res.status(200).json({
             message: 'Contacto de emergencia actualizado correctamente.',
             contactoEmergencia: {
                 id: updatedContact.id,
                 clienteId: updatedContact.clienteId,
-                nombre: safeDecrypt(updatedContact.nombre),
-                descripcion: safeDecrypt(updatedContact.descripcion),
-                telefono: safeDecrypt(updatedContact.telefono),
+                nombre: updatedContact.nombre,
+                descripcion: updatedContact.descripcion,
+                telefono: updatedContact.telefono,
                 estado: updatedContact.estado,
                 fecha_creacion: updatedContact.fecha_creacion,
                 fecha_modificacion: updatedContact.fecha_modificacion
@@ -319,7 +187,9 @@ contactosEmergenciasCtl.updateEmergencyContact = async (req, res) => {
 
     } catch (error) {
         logger.error('Error al actualizar el contacto de emergencia:', error.message);
-        res.status(500).json({ error: 'Error interno del servidor al actualizar el contacto de emergencia.' });
+        if (error.message.includes('No se proporcionaron')) return res.status(400).json({ message: error.message });
+        if (error.message.includes('no encontrado')) return res.status(404).json({ error: error.message });
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
@@ -327,153 +197,46 @@ contactosEmergenciasCtl.updateEmergencyContact = async (req, res) => {
 contactosEmergenciasCtl.deleteEmergencyContact = async (req, res) => {
     const logger = getLogger(req);
     const { id } = req.params;
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de eliminación lógica de contacto con ID: ${id}`);
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de eliminación (Hexagonal): ${id}`);
 
     try {
-        // Verificar si el contacto existe y está activo
-        const [existingContactSQL] = await sql.promise().query("SELECT id FROM contactos_emergencias WHERE id = ? AND estado = 'activo'", [id]);
-        if (existingContactSQL.length === 0) {
-            logger.warn(`[CONTACTOS_EMERGENCIA] Contacto de emergencia no encontrado o ya eliminado con ID: ${id}`);
-            return res.status(404).json({ error: 'Contacto de emergencia no encontrado o ya estaba eliminado.' });
-        }
-
-        const now = new Date();
-        // CAMBIO: Formatear la fecha a string 'YYYY-MM-DD HH:mm:ss' para columnas STRING
-        const formattedNow = formatLocalDateTime(now);
-
-        // Marcar como eliminado en SQL directo
-        const [resultadoSQL] = await sql.promise().query("UPDATE contactos_emergencias SET estado = 'eliminado', fecha_modificacion = ? WHERE id = ?", [formattedNow, id]);
-
-        if (resultadoSQL.affectedRows === 0) {
-            logger.error(`[CONTACTOS_EMERGENCIA] No se pudo marcar como eliminado el contacto con ID: ${id}.`);
-            return res.status(500).json({ error: 'No se pudo eliminar el contacto de emergencia.' });
-        }
-
-        logger.info(`[CONTACTOS_EMERGENCIA] Contacto de emergencia marcado como eliminado: id=${id}`);
+        await eliminarContactoEmergenciaUseCase.execute(id);
+        logger.info(`[CONTACTOS_EMERGENCIA] Contacto eliminado: id=${id}`);
         res.status(200).json({ message: 'Contacto de emergencia marcado como eliminado correctamente.' });
     } catch (error) {
         logger.error('Error al borrar el contacto de emergencia:', error.message);
-        res.status(500).json({ error: 'Error interno del servidor al borrar el contacto de emergencia.' });
+        if (error.message.includes('no encontrado')) return res.status(404).json({ error: error.message });
+        res.status(500).json({ error: 'Error interno del servidor.' });
     }
 };
 
-// 7. SOLICITAR VINCULACIÓN (Buscar usuario por cédula O teléfono)
+// 7. SOLICITAR VINCULACIÓN
 contactosEmergenciasCtl.requestContact = async (req, res) => {
     const logger = getLogger(req);
-    const { clienteId, criterio } = req.body; // criterio: cédula o teléfono
-
-    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de vinculación de: ${clienteId}, criterio: ${criterio}`);
-
-    if (!clienteId || !criterio) {
-        return res.status(400).json({ message: 'ClienteId y criterio de búsqueda son requeridos.' });
-    }
+    const { clienteId, criterio } = req.body;
+    logger.info(`[CONTACTOS_EMERGENCIA] Solicitud de vinculación (Hexagonal): ${clienteId}, criterio: ${criterio}`);
 
     try {
-        const criterioCifrado = cifrarDato(criterio); // Mantenemos para logs o si falla lo otro
-        let usuarioDestino = null;
-        let telefonoDestino = 'Sin número registrado';
-
-        // 1. BUSCAR POR CÉDULA (Iterando y descifrando)
-        // Obtenemos todos los clientes activos con cédula
-        const [todosClientes] = await sql.promise().query(
-            "SELECT id, nombre, cedula_identidad FROM clientes WHERE estado = 'activo'"
-        );
-
-        for (const cl of todosClientes) {
-            const cedulaReal = safeDecrypt(cl.cedula_identidad);
-            if (cedulaReal === criterio) {
-                usuarioDestino = cl;
-                // Buscar su teléfono
-                try {
-                    const [numerosSQL] = await sql.promise().query(
-                        "SELECT numero FROM clientes_numeros WHERE clienteId = ? AND estado = 'activo' LIMIT 1",
-                        [cl.id]
-                    );
-                    if (numerosSQL.length > 0) {
-                        telefonoDestino = safeDecrypt(numerosSQL[0].numero);
-                    }
-                } catch (e) { }
-                break;
-            }
-        }
-
-        // 2. Si no se encontró por cédula, BUSCAR POR TELÉFONO (Iterando y descifrando)
-        if (!usuarioDestino) {
-            const [todosNumeros] = await sql.promise().query(
-                "SELECT clienteId, numero FROM clientes_numeros WHERE estado = 'activo'"
-            );
-
-            for (const numObj of todosNumeros) {
-                const numeroReal = safeDecrypt(numObj.numero);
-                if (numeroReal === criterio) {
-                    telefonoDestino = numeroReal;
-                    // Buscar datos del cliente
-                    const [usuarioPorTel] = await sql.promise().query(
-                        "SELECT id, nombre FROM clientes WHERE id = ? AND estado = 'activo'",
-                        [numObj.clienteId]
-                    );
-                    if (usuarioPorTel.length > 0) {
-                        usuarioDestino = usuarioPorTel[0];
-                    }
-                    break;
-                }
-            }
-        }
-
-        if (!usuarioDestino) {
-            return res.status(404).json({ message: 'Usuario no encontrado con esa cédula o teléfono.' });
-        }
-
-        const idUsuarioContactoSql = usuarioDestino.id;
-
-        if (idUsuarioContactoSql == clienteId) {
-            return res.status(400).json({ message: 'No puedes agregarte a ti mismo.' });
-        }
-
-        // 3. Verificar si ya existe relación
-        const [relacionExistente] = await sql.promise().query(
-            "SELECT id, estado FROM contactos_emergencias WHERE clienteId = ? AND idUsuarioContactoSql = ? AND estado != 'eliminado'",
-            [clienteId, idUsuarioContactoSql]
-        );
-
-        if (relacionExistente.length > 0) {
-            return res.status(409).json({
-                message: 'Ya existe una solicitud o vínculo con este usuario.',
-                estado: relacionExistente[0].estado
-            });
-        }
-
-        // 4. Crear solicitud PENDIENTE
-        const now = new Date();
-        const formattedNow = formatLocalDateTime(now);
-
-        const nombreDestino = safeDecrypt(usuarioDestino.nombre);
-
-        const nuevaSolicitud = await orm.contactos_emergencia.create({
-            clienteId: clienteId,
-            idUsuarioContactoSql: idUsuarioContactoSql, // VINCULACIÓN CLAVE
-            nombre: cifrarDato(nombreDestino),
-            telefono: cifrarDato(telefonoDestino),
-            estado: 'PENDIENTE',
-            fecha_creacion: formattedNow
-        });
-
-        // Notificar via Socket al usuario destino (si está conectado)
         const io = req.app.get('io');
-        if (io) {
-            io.to(`user_${idUsuarioContactoSql}`).emit('contact:request', {
-                fromId: clienteId,
-                mensaje: `El usuario quiere agregarte como contacto de emergencia.`
-            });
-        }
+        const solicitud = await solicitarVinculacionContactoUseCase.execute(clienteId, criterio, io);
 
         res.status(201).json({
             message: 'Solicitud enviada exitosamente.',
-            data: { id: nuevaSolicitud.id, estado: 'PENDIENTE' }
+            data: { id: solicitud.id, estado: 'PENDIENTE' }
         });
 
     } catch (error) {
-        console.error('Error solicitando contacto:', error);
+        console.error('Error solicitando contacto:', error.message);
+        if (error.message.includes('requeridos') || error.message.includes('mismo')) {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message.includes('no encontrado')) {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error.message.includes('Ya existe')) {
+            return res.status(409).json({ message: error.message, estado: error.estado });
+        }
+
         res.status(500).json({ error: 'Error interno al procesar solicitud.' });
     }
 };
@@ -481,107 +244,25 @@ contactosEmergenciasCtl.requestContact = async (req, res) => {
 // 8. RESPONDER SOLICITUD (Aceptar/Rechazar)
 contactosEmergenciasCtl.respondToRequest = async (req, res) => {
     const logger = getLogger(req);
-    const { id, respuesta } = req.body; // id de la tabla contactos_emergencias, respuesta: 'ACEPTAR' | 'RECHAZAR'
-
-    logger.info(`[CONTACTOS_EMERGENCIA] Respuesta a solicitud ${id}: ${respuesta}`);
+    const { id, respuesta } = req.body;
+    logger.info(`[CONTACTOS_EMERGENCIA] Respuesta a solicitud (Hexagonal) ${id}: ${respuesta}`);
 
     try {
-        const nuevoEstado = respuesta === 'ACEPTAR' ? 'VINCULADO' : 'RECHAZADO';
-
-        // 1. Obtener información de la solicitud ANTES de actualizar (para saber quién es quién)
-        const [solicitudSQL] = await sql.promise().query(
-            "SELECT clienteId, idUsuarioContactoSql FROM contactos_emergencias WHERE id = ?",
-            [id]
-        );
-
-        if (solicitudSQL.length === 0) {
-            return res.status(404).json({ error: 'Solicitud no encontrada.' });
-        }
-        const solicitud = solicitudSQL[0];
-        const requesterId = solicitud.clienteId;
-        const accepterId = solicitud.idUsuarioContactoSql; // El que acepta (YOU)
-
-        // 2. Actualizar estado de la solicitud original
-        const [updateResult] = await sql.promise().query(
-            "UPDATE contactos_emergencias SET estado = ? WHERE id = ?",
-            [nuevoEstado, id]
-        );
-
-        // 3. Si se acepta, crear la relación inversa (Bidireccional)
-        if (respuesta === 'ACEPTAR') {
-            // Verificar si ya existe la inversa (B -> A)
-            const [relacionInversa] = await sql.promise().query(
-                "SELECT id FROM contactos_emergencias WHERE clienteId = ? AND idUsuarioContactoSql = ?",
-                [accepterId, requesterId]
-            );
-
-            if (relacionInversa.length === 0) {
-                // Obtener datos del requester para guardarlos cifrados en la lista de B
-                const [requesterData] = await sql.promise().query(
-                    "SELECT nombre FROM clientes WHERE id = ?",
-                    [requesterId]
-                );
-
-                // Obtener teléfono del requester
-                let requesterPhone = 'Sin número';
-                const [requesterPhoneData] = await sql.promise().query(
-                    "SELECT numero FROM clientes_numeros WHERE clienteId = ? AND estado = 'activo' LIMIT 1",
-                    [requesterId]
-                );
-                if (requesterPhoneData.length > 0) requesterPhone = safeDecrypt(requesterPhoneData[0].numero);
-
-                const requesterName = requesterData.length > 0 ? safeDecrypt(requesterData[0].nombre) : 'Usuario';
-
-                const now = new Date();
-                const formattedNow = formatLocalDateTime(now);
-
-                await orm.contactos_emergencia.create({
-                    clienteId: accepterId,
-                    idUsuarioContactoSql: requesterId,
-                    nombre: cifrarDato(requesterName),
-                    telefono: cifrarDato(requesterPhone),
-                    descripcion: cifrarDato('Contacto vinculado'),
-                    estado: 'VINCULADO',
-                    fecha_creacion: formattedNow
-                });
-                logger.info(`[CONTACTOS_EMERGENCIA] Relación inversa creada automáticamente: ${accepterId} -> ${requesterId}`);
-            } else {
-                // Si existe pero no estaba vinculada, actualizarla? (Opcional)
-                // await sql.promise().query("UPDATE contactos_emergencias SET estado = 'VINCULADO' WHERE id = ?", [relacionInversa[0].id]);
-            }
-        }
-
+        const nuevoEstado = await responderVinculacionContactoUseCase.execute(id, respuesta);
         res.status(200).json({ message: `Solicitud ${nuevoEstado.toLowerCase()}.` });
-
     } catch (error) {
-        console.error('Error respondiendo solicitud:', error);
+        console.error('Error respondiendo solicitud:', error.message);
+        if (error.message.includes('no encontrada')) return res.status(404).json({ error: error.message });
         res.status(500).json({ error: 'Error interno.' });
     }
 };
 
-// 9. OBTENER SOLICITUDES PENDIENTES (Donde yo soy el usuario destino)
+// 9. OBTENER SOLICITUDES PENDIENTES
 contactosEmergenciasCtl.getPendingRequests = async (req, res) => {
     const { idUsuarioSql } = req.params;
     try {
-        // Buscar en contactos_emergencias donde idUsuarioContactoSql = YO y estado = 'PENDIENTE'
-        // NOTA: c.telefono NO existe en la tabla clientes. Se ha eliminado del SELECT.
-        const [solicitudes] = await sql.promise().query(
-            `SELECT 
-                ce.id, ce.clienteId AS requesterId, c.nombre, ce.fecha_creacion
-             FROM contactos_emergencias ce
-             JOIN clientes c ON ce.clienteId = c.id
-             WHERE ce.idUsuarioContactoSql = ? AND ce.estado = 'PENDIENTE'`,
-            [idUsuarioSql]
-        );
-
-        const solicitudesProcess = solicitudes.map(sol => ({
-            id: sol.id,
-            requesterId: sol.requesterId,
-            nombre: safeDecrypt(sol.nombre),
-            fecha: sol.fecha_creacion
-        }));
-
-        res.status(200).json(solicitudesProcess);
+        const solicitudes = await listarSolicitudesPendientesUseCase.execute(idUsuarioSql);
+        res.status(200).json(solicitudes);
     } catch (error) {
         console.error('Error obteniendo solicitudes:', error);
         res.status(500).json({ error: 'Error obteniendo solicitudes.' });

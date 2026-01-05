@@ -2,7 +2,7 @@
 const CryptoJS = require('crypto-js');
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config();      
 // Define la clave secreta para el cifrado y descifrado
 // Si no existe en las variables de entorno, usa una clave por defecto
 const claveSecreta = process.env.CLAVE_SECRETA || 'cifrarqR7#'; // clave lista

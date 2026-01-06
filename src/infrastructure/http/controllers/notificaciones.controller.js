@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlNotificacionRepository = require('../../adapters/secondary/database/MysqlNotificacionRepository');
-const CrearNotificacion = require('../../../../application/use-cases/notificacion/CrearNotificacion');
-const ListarNotificaciones = require('../../../../application/use-cases/notificacion/ListarNotificaciones');
-const ObtenerNotificacion = require('../../../../application/use-cases/notificacion/ObtenerNotificacion');
-const ActualizarNotificacion = require('../../../../application/use-cases/notificacion/ActualizarNotificacion');
-const EliminarNotificacion = require('../../../../application/use-cases/notificacion/EliminarNotificacion');
+const CrearNotificacion = require('../../../application/use-cases/notificacion/CrearNotificacion');
+const ListarNotificaciones = require('../../../application/use-cases/notificacion/ListarNotificaciones');
+const ObtenerNotificacion = require('../../../application/use-cases/notificacion/ObtenerNotificacion');
+const ActualizarNotificacion = require('../../../application/use-cases/notificacion/ActualizarNotificacion');
+const EliminarNotificacion = require('../../../application/use-cases/notificacion/EliminarNotificacion');
 
 // --- Dependency Injection ---
 const notificacionRepository = new MysqlNotificacionRepository();

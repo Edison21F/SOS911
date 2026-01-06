@@ -1,4 +1,4 @@
-const IStorageRepository = require('../../../../../domain/repositories/IStorageRepository');
+const IStorageRepository = require('../../../../domain/repositories/IStorageRepository');
 const path = require('path');
 const fs = require('fs');
 

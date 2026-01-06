@@ -1,9 +1,9 @@
 // --- Hexagonal Imports ---
 const MysqlMongoContenidoAppRepository = require('../../adapters/secondary/database/MysqlMongoContenidoAppRepository');
-const ObtenerContenidoApp = require('../../../../application/use-cases/contenido_app/ObtenerContenidoApp');
-const CrearContenidoApp = require('../../../../application/use-cases/contenido_app/CrearContenidoApp');
-const ActualizarContenidoApp = require('../../../../application/use-cases/contenido_app/ActualizarContenidoApp');
-const CambiarEstadoContenidoApp = require('../../../../application/use-cases/contenido_app/CambiarEstadoContenidoApp');
+const ObtenerContenidoApp = require('../../../application/use-cases/contenido_app/ObtenerContenidoApp');
+const CrearContenidoApp = require('../../../application/use-cases/contenido_app/CrearContenidoApp');
+const ActualizarContenidoApp = require('../../../application/use-cases/contenido_app/ActualizarContenidoApp');
+const CambiarEstadoContenidoApp = require('../../../application/use-cases/contenido_app/CambiarEstadoContenidoApp');
 
 // --- Dependency Injection ---
 const contenidoAppRepository = new MysqlMongoContenidoAppRepository();

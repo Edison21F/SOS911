@@ -1,8 +1,8 @@
-const IUsuarioNumeroRepository = require('../../../../../domain/repositories/IUsuarioNumeroRepository');
-const UsuarioNumero = require('../../../../../domain/entities/UsuarioNumero');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const IUsuarioNumeroRepository = require('../../../../domain/repositories/IUsuarioNumeroRepository');
+const UsuarioNumero = require('../../../../domain/entities/UsuarioNumero');
+const orm = require('../../../database/connection/dataBase.orm.js');
+const sql = require('../../../database/connection/dataBase.sql.js');
+const SecurityService = require('../security/SecurityService');
 
 class MysqlUsuarioNumeroRepository extends IUsuarioNumeroRepository {
     constructor() {

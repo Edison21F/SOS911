@@ -1,13 +1,13 @@
 // --- Hexagonal Imports ---
 const MongoAlertaComunidadRepository = require('../../adapters/secondary/database/MongoAlertaComunidadRepository');
-const CrearAlertaComunidad = require('../../../../application/use-cases/alerta_comunidad/CrearAlertaComunidad');
-const ActualizarEstadoAlerta = require('../../../../application/use-cases/alerta_comunidad/ActualizarEstadoAlerta');
-const ObtenerAlertasActivas = require('../../../../application/use-cases/alerta_comunidad/ObtenerAlertasActivas');
-const ObtenerAlertasCercanas = require('../../../../application/use-cases/alerta_comunidad/ObtenerAlertasCercanas');
-const ObtenerHistorialAlertas = require('../../../../application/use-cases/alerta_comunidad/ObtenerHistorialAlertas');
-const ObtenerNotificacionesAlertas = require('../../../../application/use-cases/alerta_comunidad/ObtenerNotificacionesAlertas');
-const SyncOfflineAlertas = require('../../../../application/use-cases/alerta_comunidad/SyncOfflineAlertas');
-const ResponderAlerta = require('../../../../application/use-cases/alerta_comunidad/ResponderAlerta');
+const CrearAlertaComunidad = require('../../../application/use-cases/alerta_comunidad/CrearAlertaComunidad');
+const ActualizarEstadoAlerta = require('../../../application/use-cases/alerta_comunidad/ActualizarEstadoAlerta');
+const ObtenerAlertasActivas = require('../../../application/use-cases/alerta_comunidad/ObtenerAlertasActivas');
+const ObtenerAlertasCercanas = require('../../../application/use-cases/alerta_comunidad/ObtenerAlertasCercanas');
+const ObtenerHistorialAlertas = require('../../../application/use-cases/alerta_comunidad/ObtenerHistorialAlertas');
+const ObtenerNotificacionesAlertas = require('../../../application/use-cases/alerta_comunidad/ObtenerNotificacionesAlertas');
+const SyncOfflineAlertas = require('../../../application/use-cases/alerta_comunidad/SyncOfflineAlertas');
+const ResponderAlerta = require('../../../application/use-cases/alerta_comunidad/ResponderAlerta');
 
 // Repository & Dependency Injection
 const alertaRepository = new MongoAlertaComunidadRepository();

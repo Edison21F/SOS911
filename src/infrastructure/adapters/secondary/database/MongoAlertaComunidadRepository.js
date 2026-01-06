@@ -1,6 +1,8 @@
-const IAlertaComunidadRepository = require('../../../../../domain/repositories/IAlertaComunidadRepository');
-const AlertaComunidad = require('../../../../../domain/entities/AlertaComunidad');
-const AlertaModel = require('../../../../../domain/models/alertas.model'); // Mongoose Model
+const IAlertaComunidadRepository = require('../../../../domain/repositories/IAlertaComunidadRepository');
+
+const AlertaComunidad = require('../../../../domain/entities/AlertaComunidad');
+
+const AlertaModel = require('../../../../domain/models/alertas.model');
 
 class MongoAlertaComunidadRepository extends IAlertaComunidadRepository {
     constructor() {

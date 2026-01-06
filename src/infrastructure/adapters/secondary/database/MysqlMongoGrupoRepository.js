@@ -1,9 +1,11 @@
-const IGrupoRepository = require('../../../../../domain/repositories/IGrupoRepository');
-const Grupo = require('../../../../../domain/entities/Grupo');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const mongo = require('../../../database/connection/mongo.connection');
-const SecurityService = require('../../security/SecurityService');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../..');
+const IGrupoRepository = require(path.join(BASE_PATH, 'domain/repositories/IGrupoRepository'));
+const Grupo = require(path.join(BASE_PATH, 'domain/entities/Grupo'));
+const orm = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.orm'));
+const sql = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.sql'));
+const mongo = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.mongo'));
+const SecurityService = require(path.join(BASE_PATH, 'infrastructure/adapters/secondary/security/SecurityService'));
 
 class MysqlMongoGrupoRepository extends IGrupoRepository {
     constructor() {

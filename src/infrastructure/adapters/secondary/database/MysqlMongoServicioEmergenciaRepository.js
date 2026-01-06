@@ -1,9 +1,9 @@
-const IServicioEmergenciaRepository = require('../../../../../domain/repositories/IServicioEmergenciaRepository');
-const ServicioEmergencia = require('../../../../../domain/entities/ServicioEmergencia');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const mongo = require('../../../database/connection/dataBase.mongo');
-const SecurityService = require('../../security/SecurityService');
+const IServicioEmergenciaRepository = require('../../../../domain/repositories/IServicioEmergenciaRepository');
+const ServicioEmergencia = require('../../../../domain/entities/ServicioEmergencia');
+const orm = require('../../../database/connection/dataBase.orm.js');
+const sql = require('../../../database/connection/dataBase.sql.js');
+const mongo = require('../../../database/connection/dataBase.mongo.js');
+const SecurityService = require('../security/SecurityService');
 
 class MysqlMongoServicioEmergenciaRepository extends IServicioEmergenciaRepository {
     constructor() {

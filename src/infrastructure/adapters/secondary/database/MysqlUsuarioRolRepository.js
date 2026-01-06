@@ -1,8 +1,8 @@
-const IUsuarioRolRepository = require('../../../../../domain/repositories/IUsuarioRolRepository');
-const UsuarioRol = require('../../../../../domain/entities/UsuarioRol');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const IUsuarioRolRepository = require('../../../../domain/repositories/IUsuarioRolRepository');
+const UsuarioRol = require('../../../../domain/entities/UsuarioRol');
+const orm = require('../../../../infrastructure/database/connection/dataBase.orm');
+const sql = require('../../../../infrastructure/database/connection/dataBase.sql');
+const SecurityService = require('../security/SecurityService');
 
 class MysqlUsuarioRolRepository extends IUsuarioRolRepository {
     constructor() {

@@ -1,8 +1,10 @@
-const IDispositivoRepository = require('../../../../../domain/repositories/IDispositivoRepository');
-const Dispositivo = require('../../../../../domain/entities/Dispositivo');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../..');
+const IDispositivoRepository = require(path.join(BASE_PATH, 'domain/repositories/IDispositivoRepository'));
+const Dispositivo = require(path.join(BASE_PATH, 'domain/entities/Dispositivo'));
+const orm = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.orm'));
+const sql = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.sql'));
+const SecurityService = require(path.join(BASE_PATH, 'infrastructure/adapters/secondary/security/SecurityService'));
 
 class MysqlDispositivoRepository extends IDispositivoRepository {
     constructor() {

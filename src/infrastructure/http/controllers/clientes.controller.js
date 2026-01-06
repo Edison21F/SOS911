@@ -1,15 +1,15 @@
 // --- Hexagonal Imports ---
 const MysqlMongoClienteRepository = require('../../adapters/secondary/database/MysqlMongoClienteRepository');
 
-const CrearCliente = require('../../../../application/use-cases/cliente/CrearCliente');
-const ListarClientes = require('../../../../application/use-cases/cliente/ListarClientes');
-const ObtenerCliente = require('../../../../application/use-cases/cliente/ObtenerCliente');
-const ActualizarCliente = require('../../../../application/use-cases/cliente/ActualizarCliente');
-const EliminarCliente = require('../../../../application/use-cases/cliente/EliminarCliente');
-const LoginCliente = require('../../../../application/use-cases/cliente/LoginCliente');
-const LoginDevice = require('../../../../application/use-cases/cliente/LoginDevice');
-const SubirFotoPerfilCliente = require('../../../../application/use-cases/cliente/SubirFotoPerfilCliente');
-const ObtenerEstadisticasCliente = require('../../../../application/use-cases/cliente/ObtenerEstadisticasCliente');
+const CrearCliente = require('../../../application/use-cases/cliente/CrearCliente');
+const ListarClientes = require('../../../application/use-cases/cliente/ListarClientes');
+const ObtenerCliente = require('../../../application/use-cases/cliente/ObtenerCliente');
+const ActualizarCliente = require('../../../application/use-cases/cliente/ActualizarCliente');
+const EliminarCliente = require('../../../application/use-cases/cliente/EliminarCliente');
+const LoginCliente = require('../../../application/use-cases/cliente/LoginCliente');
+const LoginDevice = require('../../../application/use-cases/cliente/LoginDevice');
+const SubirFotoPerfilCliente = require('../../../application/use-cases/cliente/SubirFotoPerfilCliente');
+const ObtenerEstadisticasCliente = require('../../../application/use-cases/cliente/ObtenerEstadisticasCliente');
 
 // --- Dependency Injection ---
 const clienteRepository = new MysqlMongoClienteRepository();

@@ -1,8 +1,8 @@
-const IRolRepository = require('../../../../../domain/repositories/IRolRepository');
-const Rol = require('../../../../../domain/entities/Rol');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const IRolRepository = require('../../../../domain/repositories/IRolRepository');
+const Rol = require('../../../../domain/entities/Rol');
+const orm = require('../../../../infrastructure/database/connection/dataBase.orm');
+const sql = require('../../../../infrastructure/database/connection/dataBase.sql');
+const SecurityService = require('../security/SecurityService');
 
 class MysqlRolRepository extends IRolRepository {
     constructor() {

@@ -1,9 +1,9 @@
-const IUsuarioRepository = require('../../../../../domain/repositories/IUsuarioRepository');
-const Usuario = require('../../../../../domain/entities/Usuario');
-const orm = require('../../../../database/connection/dataBase.orm');
-const sql = require('../../../../database/connection/dataBase.sql');
-const mongo = require('../../../../database/connection/dataBase.mongo');
-const SecurityService = require('../../security/SecurityService');
+const IUsuarioRepository = require('../../../../domain/repositories/IUsuarioRepository');
+const Usuario = require('../../../../domain/entities/Usuario');
+const orm = require('../../../../infrastructure/database/connection/dataBase.orm.js');
+const sql = require('../../../../infrastructure/database/connection/dataBase.sql.js');
+const mongo = require('../../../../infrastructure/database/connection/dataBase.mongo.js');
+const SecurityService = require('../security/SecurityService');
 
 // Instantiate security service (simple DI for now)
 const securityService = new SecurityService();

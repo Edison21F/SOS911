@@ -1,8 +1,8 @@
-const IClienteNumeroRepository = require('../../../../../domain/repositories/IClienteNumeroRepository');
-const ClienteNumero = require('../../../../../domain/entities/ClienteNumero');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const IClienteNumeroRepository = require('../../../../domain/repositories/IClienteNumeroRepository');
+const ClienteNumero = require('../../../../domain/entities/ClienteNumero');
+const orm = require('../../../database/connection/dataBase.orm.js');
+const sql = require('../../../database/connection/dataBase.sql.js');
+const SecurityService = require('../security/SecurityService');
 
 class MysqlClienteNumeroRepository extends IClienteNumeroRepository {
     constructor() {
@@ -26,14 +26,16 @@ class MysqlClienteNumeroRepository extends IClienteNumeroRepository {
         return new ClienteNumero({
             id: row.id,
             clienteId: row.clienteId,
-            nombre: this.securityService.descifrar(row.nombre),
-            numero: this.securityService.descifrar(row.numero),
+            nombre: this.securityService.decrypt(row.nombre),
+            numero: this.securityService.decrypt(row.numero),
+
             estado: row.estado,
             fecha_creacion: row.fecha_creacion,
             fecha_modificacion: row.fecha_modificacion,
             cliente_info: row.cliente_nombre ? {
-                nombre: this.securityService.descifrar(row.cliente_nombre),
-                correo_electronico: this.securityService.descifrar(row.cliente_correo)
+                nombre: this.securityService.decrypt(row.cliente_nombre),
+                correo_electronico: this.securityService.decrypt(row.cliente_correo)
+
             } : null
         });
     }
@@ -41,8 +43,9 @@ class MysqlClienteNumeroRepository extends IClienteNumeroRepository {
     async save(datos) {
         const formattedDate = this._formatDate(new Date());
 
-        const nombreCifrado = this.securityService.cifrar(datos.nombre);
-        const numeroCifrado = this.securityService.cifrar(datos.numero);
+        const nombreCifrado = this.securityService.encrypt(datos.nombre);
+        const numeroCifrado = this.securityService.encrypt(datos.numero);
+
 
         const nuevoNumero = await orm.clientes_numeros.create({
             clienteId: datos.clienteId,
@@ -97,7 +100,8 @@ class MysqlClienteNumeroRepository extends IClienteNumeroRepository {
     }
 
     async findByClientAndNumber(clienteId, numero) {
-        const numeroCifrado = this.securityService.cifrar(numero);
+        const numeroCifrado = this.securityService.encrypt(numero);
+
         const [rows] = await sql.promise().query(
             "SELECT id FROM clientes_numeros WHERE clienteId = ? AND numero = ?",
             [clienteId, numeroCifrado]
@@ -117,11 +121,13 @@ class MysqlClienteNumeroRepository extends IClienteNumeroRepository {
 
         if (data.nombre !== undefined) {
             campos.push('nombre = ?');
-            valores.push(this.securityService.cifrar(data.nombre));
+            valores.push(this.securityService.encrypt(data.nombre));
+
         }
         if (data.numero !== undefined) {
             campos.push('numero = ?');
-            valores.push(this.securityService.cifrar(data.numero));
+            valores.push(this.securityService.encrypt(data.numero));
+
         }
         if (data.estado !== undefined) {
             campos.push('estado = ?');

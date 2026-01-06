@@ -1,8 +1,8 @@
-const IAlertaRepository = require('../../../../../domain/repositories/IAlertaRepository');
-const Alerta = require('../../../../../domain/entities/Alerta');
-const orm = require('../../../../database/connection/dataBase.orm');
-const sql = require('../../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const IAlertaRepository = require('../../../../domain/repositories/IAlertaRepository');
+const Alerta = require('../../../../domain/entities/Alerta');
+const orm = require('../../../../infrastructure/database/connection/dataBase.orm');
+const sql = require('../../../../infrastructure/database/connection/dataBase.sql');
+const SecurityService = require('../security/SecurityService');
 
 const securityService = new SecurityService();
 

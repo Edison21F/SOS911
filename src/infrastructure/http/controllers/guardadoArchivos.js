@@ -7,7 +7,7 @@ app.use(cookieParser());
 // But this file exports an object 'guardadoImgenCtl', it doesn't seem to use the 'app' instance created here for anything other than imports?
 // It seems the legacy file had unused code at the top. I will focus on the controller functions.
 
-const LocalStorageRepository = require('../adapters/secondary/storage/LocalStorageRepository');
+const LocalStorageRepository = require('../../adapters/secondary/storage/LocalStorageRepository');
 const SubirArchivo = require('../../../application/use-cases/common/SubirArchivo');
 
 const storageRepository = new LocalStorageRepository();

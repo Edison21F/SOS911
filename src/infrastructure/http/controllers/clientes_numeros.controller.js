@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlClienteNumeroRepository = require('../../adapters/secondary/database/MysqlClienteNumeroRepository');
-const CrearNumeroCliente = require('../../../../application/use-cases/cliente_numero/CrearNumeroCliente');
-const ListarNumerosClientes = require('../../../../application/use-cases/cliente_numero/ListarNumerosClientes');
-const ObtenerNumeroCliente = require('../../../../application/use-cases/cliente_numero/ObtenerNumeroCliente');
-const ActualizarNumeroCliente = require('../../../../application/use-cases/cliente_numero/ActualizarNumeroCliente');
-const EliminarNumeroCliente = require('../../../../application/use-cases/cliente_numero/EliminarNumeroCliente');
+const CrearNumeroCliente = require('../../../application/use-cases/cliente_numero/CrearNumeroCliente');
+const ListarNumerosClientes = require('../../../application/use-cases/cliente_numero/ListarNumerosClientes');
+const ObtenerNumeroCliente = require('../../../application/use-cases/cliente_numero/ObtenerNumeroCliente');
+const ActualizarNumeroCliente = require('../../../application/use-cases/cliente_numero/ActualizarNumeroCliente');
+const EliminarNumeroCliente = require('../../../application/use-cases/cliente_numero/EliminarNumeroCliente');
 
 // --- Dependency Injection ---
 const clienteNumeroRepository = new MysqlClienteNumeroRepository();

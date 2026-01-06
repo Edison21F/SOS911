@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlMongoUbicacionClienteRepository = require('../../adapters/secondary/database/MysqlMongoUbicacionClienteRepository');
-const CrearUbicacionCliente = require('../../../../application/use-cases/ubicacion_cliente/CrearUbicacionCliente');
-const ListarUbicacionesClientes = require('../../../../application/use-cases/ubicacion_cliente/ListarUbicacionesClientes');
-const ObtenerUbicacionCliente = require('../../../../application/use-cases/ubicacion_cliente/ObtenerUbicacionCliente');
-const ActualizarUbicacionCliente = require('../../../../application/use-cases/ubicacion_cliente/ActualizarUbicacionCliente');
-const EliminarUbicacionCliente = require('../../../../application/use-cases/ubicacion_cliente/EliminarUbicacionCliente');
+const CrearUbicacionCliente = require('../../../application/use-cases/ubicacion_cliente/CrearUbicacionCliente');
+const ListarUbicacionesClientes = require('../../../application/use-cases/ubicacion_cliente/ListarUbicacionesClientes');
+const ObtenerUbicacionCliente = require('../../../application/use-cases/ubicacion_cliente/ObtenerUbicacionCliente');
+const ActualizarUbicacionCliente = require('../../../application/use-cases/ubicacion_cliente/ActualizarUbicacionCliente');
+const EliminarUbicacionCliente = require('../../../application/use-cases/ubicacion_cliente/EliminarUbicacionCliente');
 
 // --- Dependency Injection ---
 const ubicacionRepository = new MysqlMongoUbicacionClienteRepository();

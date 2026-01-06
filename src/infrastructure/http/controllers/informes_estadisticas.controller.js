@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlInformeEstadisticaRepository = require('../../adapters/secondary/database/MysqlInformeEstadisticaRepository');
-const CrearInformeEstadistica = require('../../../../application/use-cases/informe_estadistica/CrearInformeEstadistica');
-const ListarInformesEstadisticas = require('../../../../application/use-cases/informe_estadistica/ListarInformesEstadisticas');
-const ObtenerInformeEstadistica = require('../../../../application/use-cases/informe_estadistica/ObtenerInformeEstadistica');
-const ActualizarInformeEstadistica = require('../../../../application/use-cases/informe_estadistica/ActualizarInformeEstadistica');
-const EliminarInformeEstadistica = require('../../../../application/use-cases/informe_estadistica/EliminarInformeEstadistica');
+const CrearInformeEstadistica = require('../../../application/use-cases/informe_estadistica/CrearInformeEstadistica');
+const ListarInformesEstadisticas = require('../../../application/use-cases/informe_estadistica/ListarInformesEstadisticas');
+const ObtenerInformeEstadistica = require('../../../application/use-cases/informe_estadistica/ObtenerInformeEstadistica');
+const ActualizarInformeEstadistica = require('../../../application/use-cases/informe_estadistica/ActualizarInformeEstadistica');
+const EliminarInformeEstadistica = require('../../../application/use-cases/informe_estadistica/EliminarInformeEstadistica');
 
 // --- Dependency Injection ---
 const informeRepository = new MysqlInformeEstadisticaRepository();

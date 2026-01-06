@@ -1,10 +1,12 @@
 // --- Hexagonal Imports ---
 const MysqlMongoServicioEmergenciaRepository = require('../../adapters/secondary/database/MysqlMongoServicioEmergenciaRepository');
-const CrearServicioEmergencia = require('../../../../application/use-cases/servicio_emergencia/CrearServicioEmergencia');
-const ListarServiciosEmergencia = require('../../../../application/use-cases/servicio_emergencia/ListarServiciosEmergencia');
-const ObtenerServicioEmergencia = require('../../../../application/use-cases/servicio_emergencia/ObtenerServicioEmergencia');
-const ActualizarServicioEmergencia = require('../../../../application/use-cases/servicio_emergencia/ActualizarServicioEmergencia');
-const EliminarServicioEmergencia = require('../../../../application/use-cases/servicio_emergencia/EliminarServicioEmergencia');
+
+const CrearServicioEmergencia = require('../../../application/use-cases/servicio_emergencia/CrearServicioEmergencia');
+
+const ListarServiciosEmergencia = require('../../../application/use-cases/servicio_emergencia/ListarServiciosEmergencia');
+const ObtenerServicioEmergencia = require('../../../application/use-cases/servicio_emergencia/ObtenerServicioEmergencia');
+const ActualizarServicioEmergencia = require('../../../application/use-cases/servicio_emergencia/ActualizarServicioEmergencia');
+const EliminarServicioEmergencia = require('../../../application/use-cases/servicio_emergencia/EliminarServicioEmergencia');
 
 // --- Dependency Injection ---
 const servicioRepository = new MysqlMongoServicioEmergenciaRepository();

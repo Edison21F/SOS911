@@ -28,12 +28,14 @@
 // }
 
 // --- Hexagonal Imports ---
-const MysqlMongoUsuarioRepository = require('../../adapters/secondary/database/MysqlMongoUsuarioRepository');
-const RegistrarUsuario = require('../../../../application/use-cases/usuario/RegistrarUsuario');
-const LoginUsuario = require('../../../../application/use-cases/usuario/LoginUsuario');
-const ObtenerUsuario = require('../../../../application/use-cases/usuario/ObtenerUsuario');
-const ActualizarUsuario = require('../../../../application/use-cases/usuario/ActualizarUsuario');
-const EliminarUsuario = require('../../../../application/use-cases/usuario/EliminarUsuario');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../../');
+const MysqlMongoUsuarioRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlMongoUsuarioRepository'));
+const RegistrarUsuario = require(path.join(BASE_PATH, 'src/application/use-cases/usuario/RegistrarUsuario'));
+const LoginUsuario = require(path.join(BASE_PATH, 'src/application/use-cases/usuario/LoginUsuario'));
+const ObtenerUsuario = require(path.join(BASE_PATH, 'src/application/use-cases/usuario/ObtenerUsuario'));
+const ActualizarUsuario = require(path.join(BASE_PATH, 'src/application/use-cases/usuario/ActualizarUsuario'));
+const EliminarUsuario = require(path.join(BASE_PATH, 'src/application/use-cases/usuario/EliminarUsuario'));
 
 const usersCtl = {};
 

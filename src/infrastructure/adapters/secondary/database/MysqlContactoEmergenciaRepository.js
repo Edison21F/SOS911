@@ -1,8 +1,10 @@
-const IContactoEmergenciaRepository = require('../../../../../domain/repositories/IContactoEmergenciaRepository');
-const ContactoEmergencia = require('../../../../../domain/entities/ContactoEmergencia');
-const orm = require('../../../../database/connection/dataBase.orm');
-const sql = require('../../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../..');
+const IContactoEmergenciaRepository = require(path.join(BASE_PATH, 'domain/repositories/IContactoEmergenciaRepository'));
+const ContactoEmergencia = require(path.join(BASE_PATH, 'domain/entities/ContactoEmergencia'));
+const orm = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.orm'));
+const sql = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.sql'));
+const SecurityService = require(path.join(BASE_PATH, 'infrastructure/adapters/secondary/security/SecurityService'));
 
 const securityService = new SecurityService();
 

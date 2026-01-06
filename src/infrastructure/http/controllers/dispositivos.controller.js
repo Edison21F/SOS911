@@ -1,10 +1,12 @@
 // --- Hexagonal Imports ---
-const MysqlDispositivoRepository = require('../../adapters/secondary/database/MysqlDispositivoRepository');
-const CrearDispositivo = require('../../../../application/use-cases/dispositivo/CrearDispositivo');
-const ListarDispositivos = require('../../../../application/use-cases/dispositivo/ListarDispositivos');
-const ObtenerDispositivo = require('../../../../application/use-cases/dispositivo/ObtenerDispositivo');
-const ActualizarDispositivo = require('../../../../application/use-cases/dispositivo/ActualizarDispositivo');
-const EliminarDispositivo = require('../../../../application/use-cases/dispositivo/EliminarDispositivo');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../../');
+const MysqlDispositivoRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlDispositivoRepository'));
+const CrearDispositivo = require(path.join(BASE_PATH, 'src/application/use-cases/dispositivo/CrearDispositivo'));
+const ListarDispositivos = require(path.join(BASE_PATH, 'src/application/use-cases/dispositivo/ListarDispositivos'));
+const ObtenerDispositivo = require(path.join(BASE_PATH, 'src/application/use-cases/dispositivo/ObtenerDispositivo'));
+const ActualizarDispositivo = require(path.join(BASE_PATH, 'src/application/use-cases/dispositivo/ActualizarDispositivo'));
+const EliminarDispositivo = require(path.join(BASE_PATH, 'src/application/use-cases/dispositivo/EliminarDispositivo'));
 
 // --- Dependency Injection ---
 const dispositivoRepository = new MysqlDispositivoRepository();

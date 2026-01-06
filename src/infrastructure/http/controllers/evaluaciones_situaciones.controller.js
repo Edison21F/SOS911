@@ -1,11 +1,13 @@
 // --- Hexagonal Imports ---
-const MysqlEvaluacionSituacionRepository = require('../../adapters/secondary/database/MysqlEvaluacionSituacionRepository');
-const MysqlNotificacionRepository = require('../../adapters/secondary/database/MysqlNotificacionRepository');
-const CrearEvaluacionSituacion = require('../../../../application/use-cases/evaluacion_situacion/CrearEvaluacionSituacion');
-const ListarEvaluacionesSituaciones = require('../../../../application/use-cases/evaluacion_situacion/ListarEvaluacionesSituaciones');
-const ObtenerEvaluacionSituacion = require('../../../../application/use-cases/evaluacion_situacion/ObtenerEvaluacionSituacion');
-const ActualizarEvaluacionSituacion = require('../../../../application/use-cases/evaluacion_situacion/ActualizarEvaluacionSituacion');
-const EliminarEvaluacionSituacion = require('../../../../application/use-cases/evaluacion_situacion/EliminarEvaluacionSituacion');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../../');
+const MysqlEvaluacionSituacionRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlEvaluacionSituacionRepository'));
+const MysqlNotificacionRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlNotificacionRepository'));
+const CrearEvaluacionSituacion = require(path.join(BASE_PATH, 'src/application/use-cases/evaluacion_situacion/CrearEvaluacionSituacion'));
+const ListarEvaluacionesSituaciones = require(path.join(BASE_PATH, 'src/application/use-cases/evaluacion_situacion/ListarEvaluacionesSituaciones'));
+const ObtenerEvaluacionSituacion = require(path.join(BASE_PATH, 'src/application/use-cases/evaluacion_situacion/ObtenerEvaluacionSituacion'));
+const ActualizarEvaluacionSituacion = require(path.join(BASE_PATH, 'src/application/use-cases/evaluacion_situacion/ActualizarEvaluacionSituacion'));
+const EliminarEvaluacionSituacion = require(path.join(BASE_PATH, 'src/application/use-cases/evaluacion_situacion/EliminarEvaluacionSituacion'));
 
 // --- Dependency Injection ---
 const evaluacionRepository = new MysqlEvaluacionSituacionRepository();

@@ -1,8 +1,8 @@
-const IInformeEstadisticaRepository = require('../../../../../domain/repositories/IInformeEstadisticaRepository');
-const InformeEstadistica = require('../../../../../domain/entities/InformeEstadistica');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const { descifrarDato } = require('../../../../../application/controller/encrypDates');
+const IInformeEstadisticaRepository = require('../../../../domain/repositories/IInformeEstadisticaRepository');
+const InformeEstadistica = require('../../../../domain/entities/InformeEstadistica');
+const orm = require('../../../database/connection/dataBase.orm.js');
+const sql = require('../../../database/connection/dataBase.sql.js');
+const { descifrarDato } = require('../../../../application/controller/encrypDates');
 
 class MysqlInformeEstadisticaRepository extends IInformeEstadisticaRepository {
     constructor() {

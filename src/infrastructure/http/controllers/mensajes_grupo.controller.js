@@ -1,9 +1,9 @@
 // --- Hexagonal Imports ---
 const MysqlMongoMensajeGrupoRepository = require('../../adapters/secondary/database/MysqlMongoMensajeGrupoRepository');
-const CrearMensajeGrupo = require('../../../../application/use-cases/mensaje_grupo/CrearMensajeGrupo');
-const ListarMensajesGrupo = require('../../../../application/use-cases/mensaje_grupo/ListarMensajesGrupo');
-const ActualizarMensajeGrupo = require('../../../../application/use-cases/mensaje_grupo/ActualizarMensajeGrupo');
-const EliminarMensajeGrupo = require('../../../../application/use-cases/mensaje_grupo/EliminarMensajeGrupo');
+const CrearMensajeGrupo = require('../../../application/use-cases/mensaje_grupo/CrearMensajeGrupo');
+const ListarMensajesGrupo = require('../../../application/use-cases/mensaje_grupo/ListarMensajesGrupo');
+const ActualizarMensajeGrupo = require('../../../application/use-cases/mensaje_grupo/ActualizarMensajeGrupo');
+const EliminarMensajeGrupo = require('../../../application/use-cases/mensaje_grupo/EliminarMensajeGrupo');
 
 // --- Dependency Injection ---
 const mensajeGrupoRepository = new MysqlMongoMensajeGrupoRepository();

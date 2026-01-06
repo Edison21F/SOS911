@@ -1,9 +1,9 @@
-const IUbicacionClienteRepository = require('../../../../../domain/repositories/IUbicacionClienteRepository');
-const UbicacionCliente = require('../../../../../domain/entities/UbicacionCliente');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const mongo = require('../../../database/connection/dataBase.mongo');
-const SecurityService = require('../../security/SecurityService');
+const IUbicacionClienteRepository = require('../../../../domain/repositories/IUbicacionClienteRepository');
+const UbicacionCliente = require('../../../../domain/entities/UbicacionCliente');
+const orm = require('../../../database/connection/dataBase.orm.js');
+const sql = require('../../../database/connection/dataBase.sql.js');
+const mongo = require('../../../database/connection/dataBase.mongo.js');
+const SecurityService = require('../security/SecurityService');
 
 class MysqlMongoUbicacionClienteRepository extends IUbicacionClienteRepository {
     constructor() {
@@ -34,9 +34,10 @@ class MysqlMongoUbicacionClienteRepository extends IUbicacionClienteRepository {
             fecha_creacion: row.fecha_creacion,
             fecha_modificacion: row.fecha_modificacion,
             cliente_info: row.cliente_nombre ? {
-                nombre: this.securityService.descifrar(row.cliente_nombre),
-                correo_electronico: this.securityService.descifrar(row.cliente_correo)
-            } : null
+            nombre: this.securityService.decrypt(row.cliente_nombre),
+            correo_electronico: this.securityService.decrypt(row.cliente_correo)
+         } : null
+
         });
     }
 

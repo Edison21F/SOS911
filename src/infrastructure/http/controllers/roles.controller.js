@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlRolRepository = require('../../adapters/secondary/database/MysqlRolRepository');
-const CrearRol = require('../../../../application/use-cases/rol/CrearRol');
-const ListarRoles = require('../../../../application/use-cases/rol/ListarRoles');
-const ObtenerRol = require('../../../../application/use-cases/rol/ObtenerRol');
-const ActualizarRol = require('../../../../application/use-cases/rol/ActualizarRol');
-const EliminarRol = require('../../../../application/use-cases/rol/EliminarRol');
+const CrearRol = require('../../../application/use-cases/rol/CrearRol');
+const ListarRoles = require('../../../application/use-cases/rol/ListarRoles');
+const ObtenerRol = require('../../../application/use-cases/rol/ObtenerRol');
+const ActualizarRol = require('../../../application/use-cases/rol/ActualizarRol');
+const EliminarRol = require('../../../application/use-cases/rol/EliminarRol');
 
 // --- Dependency Injection ---
 const rolRepository = new MysqlRolRepository();

@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlAlertaRepository = require('../../adapters/secondary/database/MysqlAlertaRepository');
-const CrearAlerta = require('../../../../application/use-cases/alerta/CrearAlerta');
-const ObtenerAlerta = require('../../../../application/use-cases/alerta/ObtenerAlerta');
-const ListarAlertas = require('../../../../application/use-cases/alerta/ListarAlertas');
-const ActualizarAlerta = require('../../../../application/use-cases/alerta/ActualizarAlerta');
-const EliminarAlerta = require('../../../../application/use-cases/alerta/EliminarAlerta');
+const CrearAlerta = require('../../../application/use-cases/alerta/CrearAlerta');
+const ObtenerAlerta = require('../../../application/use-cases/alerta/ObtenerAlerta');
+const ListarAlertas = require('../../../application/use-cases/alerta/ListarAlertas');
+const ActualizarAlerta = require('../../../application/use-cases/alerta/ActualizarAlerta');
+const EliminarAlerta = require('../../../application/use-cases/alerta/EliminarAlerta');
 
 // --- Dependency Injection ---
 const alertaRepository = new MysqlAlertaRepository();

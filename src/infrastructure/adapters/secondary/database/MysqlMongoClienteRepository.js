@@ -1,10 +1,12 @@
-const IClienteRepository = require('../../../../../domain/repositories/IClienteRepository');
-const Cliente = require('../../../../../domain/entities/Cliente');
-const orm = require('../../../../database/connection/dataBase.orm');
-const sql = require('../../../../database/connection/dataBase.sql');
-const mongo = require('../../../../database/connection/dataBase.mongo');
-const SecurityService = require('../../security/SecurityService');
-const Alerta = require('../../../../../domain/models/alertas.model'); // For stats logic (Mongo Model direct usage allowed in Infra Adapter)
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../..');
+const IClienteRepository = require(path.join(BASE_PATH, 'domain/repositories/IClienteRepository'));
+const Cliente = require(path.join(BASE_PATH, 'domain/entities/Cliente'));
+const orm = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.orm'));
+const sql = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.sql'));
+const mongo = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.mongo'));
+const SecurityService = require(path.join(BASE_PATH, 'infrastructure/adapters/secondary/security/SecurityService'));
+const Alerta = require(path.join(BASE_PATH, 'domain/models/alertas.model')); // For stats logic (Mongo Model direct usage allowed in Infra Adapter)
 
 const securityService = new SecurityService();
 

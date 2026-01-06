@@ -1,4 +1,4 @@
-const { cifrarDato, descifrarDato } = require('../../../application/controller/encrypDates');
+const { cifrarDato, descifrarDato } = require('../../../../application/controller/encrypDates');
 
 /**
  * Service to handle data encryption and decryption.

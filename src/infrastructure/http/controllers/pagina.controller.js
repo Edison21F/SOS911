@@ -1,8 +1,10 @@
-const MysqlMongoPaginaRepository = require('../../adapters/secondary/database/MysqlMongoPaginaRepository');
-const CrearPagina = require('../../../../application/use-cases/pagina/CrearPagina');
-const ObtenerPagina = require('../../../../application/use-cases/pagina/ObtenerPagina');
-const ActualizarPagina = require('../../../../application/use-cases/pagina/ActualizarPagina');
-const EliminarPagina = require('../../../../application/use-cases/pagina/EliminarPagina');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../../');
+const MysqlMongoPaginaRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlMongoPaginaRepository'));
+const CrearPagina = require(path.join(BASE_PATH, 'src/application/use-cases/pagina/CrearPagina'));
+const ObtenerPagina = require(path.join(BASE_PATH, 'src/application/use-cases/pagina/ObtenerPagina'));
+const ActualizarPagina = require(path.join(BASE_PATH, 'src/application/use-cases/pagina/ActualizarPagina'));
+const EliminarPagina = require(path.join(BASE_PATH, 'src/application/use-cases/pagina/EliminarPagina'));
 
 const paginaRepository = new MysqlMongoPaginaRepository();
 const crearPaginaUseCase = new CrearPagina(paginaRepository);

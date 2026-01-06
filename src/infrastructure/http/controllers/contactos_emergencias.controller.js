@@ -1,15 +1,17 @@
-const MysqlContactoEmergenciaRepository = require('../../adapters/secondary/database/MysqlContactoEmergenciaRepository');
-const MysqlMongoClienteRepository = require('../../adapters/secondary/database/MysqlMongoClienteRepository');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../../');
+const MysqlContactoEmergenciaRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlContactoEmergenciaRepository'));
+const MysqlMongoClienteRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlMongoClienteRepository'));
 
-const CrearContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/CrearContactoEmergencia');
-const ListarContactosEmergencia = require('../../../../application/use-cases/contacto_emergencia/ListarContactosEmergencia');
-const ObtenerContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/ObtenerContactoEmergencia');
-const ObtenerContactosPorCliente = require('../../../../application/use-cases/contacto_emergencia/ObtenerContactosPorCliente');
-const ActualizarContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/ActualizarContactoEmergencia');
-const EliminarContactoEmergencia = require('../../../../application/use-cases/contacto_emergencia/EliminarContactoEmergencia');
-const SolicitarVinculacionContacto = require('../../../../application/use-cases/contacto_emergencia/SolicitarVinculacionContacto');
-const ResponderVinculacionContacto = require('../../../../application/use-cases/contacto_emergencia/ResponderVinculacionContacto');
-const ListarSolicitudesPendientes = require('../../../../application/use-cases/contacto_emergencia/ListarSolicitudesPendientes');
+const CrearContactoEmergencia = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/CrearContactoEmergencia'));
+const ListarContactosEmergencia = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/ListarContactosEmergencia'));
+const ObtenerContactoEmergencia = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/ObtenerContactoEmergencia'));
+const ObtenerContactosPorCliente = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/ObtenerContactosPorCliente'));
+const ActualizarContactoEmergencia = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/ActualizarContactoEmergencia'));
+const EliminarContactoEmergencia = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/EliminarContactoEmergencia'));
+const SolicitarVinculacionContacto = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/SolicitarVinculacionContacto'));
+const ResponderVinculacionContacto = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/ResponderVinculacionContacto'));
+const ListarSolicitudesPendientes = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_emergencia/ListarSolicitudesPendientes'));
 
 // --- Dependency Injection ---
 const contactoEmergenciaRepository = new MysqlContactoEmergenciaRepository();

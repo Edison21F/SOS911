@@ -1,8 +1,10 @@
-const IClienteGrupoRepository = require('../../../../../domain/repositories/IClienteGrupoRepository');
-const ClienteGrupo = require('../../../../../domain/entities/ClienteGrupo');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const SecurityService = require('../../security/SecurityService');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../..');
+const IClienteGrupoRepository = require(path.join(BASE_PATH, 'domain/repositories/IClienteGrupoRepository'));
+const ClienteGrupo = require(path.join(BASE_PATH, 'domain/entities/ClienteGrupo'));
+const orm = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.orm'));
+const sql = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.sql'));
+const SecurityService = require(path.join(BASE_PATH, 'infrastructure/adapters/secondary/security/SecurityService'));
 
 class MysqlClienteGrupoRepository extends IClienteGrupoRepository {
     constructor() {

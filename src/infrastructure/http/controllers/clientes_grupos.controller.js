@@ -2,11 +2,11 @@
 const orm = require('../../database/connection/dataBase.orm'); // Para Sequelize (SQL) - Necesario para las relaciones
 // --- Hexagonal Imports ---
 const MysqlClienteGrupoRepository = require('../../adapters/secondary/database/MysqlClienteGrupoRepository');
-const AsignarClienteGrupo = require('../../../../application/use-cases/cliente_grupo/AsignarClienteGrupo');
-const ListarClientesGrupos = require('../../../../application/use-cases/cliente_grupo/ListarClientesGrupos');
-const ObtenerClienteGrupo = require('../../../../application/use-cases/cliente_grupo/ObtenerClienteGrupo');
-const ActualizarClienteGrupo = require('../../../../application/use-cases/cliente_grupo/ActualizarClienteGrupo');
-const EliminarClienteGrupo = require('../../../../application/use-cases/cliente_grupo/EliminarClienteGrupo');
+const AsignarClienteGrupo = require('../../../application/use-cases/cliente_grupo/AsignarClienteGrupo');
+const ListarClientesGrupos = require('../../../application/use-cases/cliente_grupo/ListarClientesGrupos');
+const ObtenerClienteGrupo = require('../../../application/use-cases/cliente_grupo/ObtenerClienteGrupo');
+const ActualizarClienteGrupo = require('../../../application/use-cases/cliente_grupo/ActualizarClienteGrupo');
+const EliminarClienteGrupo = require('../../../application/use-cases/cliente_grupo/EliminarClienteGrupo');
 
 // --- Dependency Injection ---
 const clienteGrupoRepository = new MysqlClienteGrupoRepository();
@@ -99,10 +99,11 @@ clientesGruposCtl.ActualizarUsuariosGrupo = async (req, res) => {
     try {
         const relacionActualizada = await actualizarClienteGrupoUseCase.execute(id, req.body);
 
-        message: 'Relación actualizada correctamente.',
+        res.status(200).json({
+            message: 'Relación actualizada correctamente.',
             cliente_grupo: relacionActualizada
-    });
-} catch (error) {
+        });
+    } catch (error) {
     console.error(`[CLIENTE_GRUPO] Error al actualizar: ${error.message}`);
     if (error.message.includes('no encontrada')) {
         return res.status(404).json({ error: error.message });

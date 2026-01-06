@@ -1,10 +1,12 @@
 // --- Hexagonal Imports ---
-const MysqlContactoClienteRepository = require('../../adapters/secondary/database/MysqlContactoClienteRepository');
-const CrearContactoCliente = require('../../../../application/use-cases/contacto_cliente/CrearContactoCliente');
-const ListarContactosClientes = require('../../../../application/use-cases/contacto_cliente/ListarContactosClientes');
-const ObtenerContactoCliente = require('../../../../application/use-cases/contacto_cliente/ObtenerContactoCliente');
-const ActualizarContactoCliente = require('../../../../application/use-cases/contacto_cliente/ActualizarContactoCliente');
-const EliminarContactoCliente = require('../../../../application/use-cases/contacto_cliente/EliminarContactoCliente');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../../');
+const MysqlContactoClienteRepository = require(path.join(BASE_PATH, 'src/infrastructure/adapters/secondary/database/MysqlContactoClienteRepository'));
+const CrearContactoCliente = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_cliente/CrearContactoCliente'));
+const ListarContactosClientes = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_cliente/ListarContactosClientes'));
+const ObtenerContactoCliente = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_cliente/ObtenerContactoCliente'));
+const ActualizarContactoCliente = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_cliente/ActualizarContactoCliente'));
+const EliminarContactoCliente = require(path.join(BASE_PATH, 'src/application/use-cases/contacto_cliente/EliminarContactoCliente'));
 
 // --- Dependency Injection ---
 const contactoClienteRepository = new MysqlContactoClienteRepository();

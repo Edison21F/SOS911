@@ -2,13 +2,13 @@
 const MysqlMongoGrupoRepository = require('../../adapters/secondary/database/MysqlMongoGrupoRepository');
 const MysqlClienteGrupoRepository = require('../../adapters/secondary/database/MysqlClienteGrupoRepository');
 
-const CrearGrupo = require('../../../../application/use-cases/grupo/CrearGrupo');
-const ListarGrupos = require('../../../../application/use-cases/grupo/ListarGrupos');
-const ObtenerGrupo = require('../../../../application/use-cases/grupo/ObtenerGrupo');
-const ActualizarGrupo = require('../../../../application/use-cases/grupo/ActualizarGrupo');
-const EliminarGrupo = require('../../../../application/use-cases/grupo/EliminarGrupo');
-const UnirseAGrupo = require('../../../../application/use-cases/grupo/UnirseAGrupo');
-const ListarClientesGrupos = require('../../../../application/use-cases/cliente_grupo/ListarClientesGrupos'); // For getMembers
+const CrearGrupo = require('../../../application/use-cases/grupo/CrearGrupo');
+const ListarGrupos = require('../../../application/use-cases/grupo/ListarGrupos');
+const ObtenerGrupo = require('../../../application/use-cases/grupo/ObtenerGrupo');
+const ActualizarGrupo = require('../../../application/use-cases/grupo/ActualizarGrupo');
+const EliminarGrupo = require('../../../application/use-cases/grupo/EliminarGrupo');
+const UnirseAGrupo = require('../../../application/use-cases/grupo/UnirseAGrupo');
+const ListarClientesGrupos = require('../../../application/use-cases/cliente_grupo/ListarClientesGrupos'); // For getMembers
 
 // --- Dependency Injection ---
 const grupoRepository = new MysqlMongoGrupoRepository();

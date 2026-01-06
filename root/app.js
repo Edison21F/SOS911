@@ -31,8 +31,11 @@ const app = express();
 // 0. Archivos estáticos (para acceder a las imágenes de perfil)
 app.use(express.static(path.join(__dirname, '../public')));
 
+
+
+
 // ==================== CONFIGURACIÓN BÁSICA ====================
-app.set('port', process.env.PORT || 4000); // Usar tu puerto 4000 como predeterminado 
+app.set('port', process.env.PORT || 3000); // Usar tu puerto 4000 como predeterminado 
 
 // ==================== CONFIGURACIÓN CORREGIDA ====================
 
@@ -388,7 +391,6 @@ app.use('/clientes_grupos', require('../src/infrastructure/http/router/clientes_
 app.use('/servicios_emergencia', require('../src/infrastructure/http/router/servicios_emergencia.router'));
 app.use('/contenido_app', require('../src/infrastructure/http/router/contenido_app.router'));
 app.use('/alertas', require('../src/infrastructure/http/router/alertas.router'));
-app.use('/contactos_emergencia_v2', require('../src/infrastructure/http/router/contactos_emergencia.router'));
 
 
 // ==================== MANEJO DE ERRORES ====================

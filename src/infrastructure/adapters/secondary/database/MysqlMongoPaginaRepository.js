@@ -1,9 +1,9 @@
-const IPaginaRepository = require('../../../../../domain/repositories/IPaginaRepository');
-const Pagina = require('../../../../../domain/entities/Pagina');
-const orm = require('../../../../database/connection/dataBase.orm'); // For Creation via ORM
-const sql = require('../../../../database/connection/dataBase.sql'); // For direct SQL queries
-const mongo = require('../../../../database/connection/dataBase.mongo');
-const SecurityService = require('../../security/SecurityService');
+const IPaginaRepository = require('../../../../domain/repositories/IPaginaRepository');
+const Pagina = require('../../../../domain/entities/Pagina');
+const orm = require('../../../../infrastructure/database/connection/dataBase.orm');
+const sql = require('../../../../infrastructure/database/connection/dataBase.sql');
+const mongo = require('../../../../infrastructure/database/connection/dataBase.mongo');
+const SecurityService = require('../security/SecurityService');
 
 const securityService = new SecurityService();
 

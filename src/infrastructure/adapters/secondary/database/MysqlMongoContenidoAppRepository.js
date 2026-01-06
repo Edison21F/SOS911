@@ -1,8 +1,10 @@
-const IContenidoAppRepository = require('../../../../../domain/repositories/IContenidoAppRepository');
-const ContenidoApp = require('../../../../../domain/entities/ContenidoApp');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const mongo = require('../../../database/connection/dataBase.mongo');
+const IContenidoAppRepository = require('../../../../domain/repositories/IContenidoAppRepository');
+const ContenidoApp = require('../../../../domain/entities/ContenidoApp');
+
+const orm = require('../../../../infrastructure/database/connection/dataBase.orm');
+const sql = require('../../../../infrastructure/database/connection/dataBase.sql');
+const mongo = require('../../../../infrastructure/database/connection/dataBase.mongo');
+
 
 class MysqlMongoContenidoAppRepository extends IContenidoAppRepository {
     constructor() {

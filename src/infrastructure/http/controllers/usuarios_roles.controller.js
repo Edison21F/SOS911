@@ -1,10 +1,10 @@
 // --- Hexagonal Imports ---
 const MysqlUsuarioRolRepository = require('../../adapters/secondary/database/MysqlUsuarioRolRepository');
-const AsignarUsuarioRol = require('../../../../application/use-cases/usuario_rol/AsignarUsuarioRol');
-const ListarUsuariosRoles = require('../../../../application/use-cases/usuario_rol/ListarUsuariosRoles');
-const ObtenerUsuarioRol = require('../../../../application/use-cases/usuario_rol/ObtenerUsuarioRol');
-const ActualizarUsuarioRol = require('../../../../application/use-cases/usuario_rol/ActualizarUsuarioRol');
-const EliminarUsuarioRol = require('../../../../application/use-cases/usuario_rol/EliminarUsuarioRol');
+const AsignarUsuarioRol = require('../../../application/use-cases/usuario_rol/AsignarUsuarioRol');
+const ListarUsuariosRoles = require('../../../application/use-cases/usuario_rol/ListarUsuariosRoles');
+const ObtenerUsuarioRol = require('../../../application/use-cases/usuario_rol/ObtenerUsuarioRol');
+const ActualizarUsuarioRol = require('../../../application/use-cases/usuario_rol/ActualizarUsuarioRol');
+const EliminarUsuarioRol = require('../../../application/use-cases/usuario_rol/EliminarUsuarioRol');
 
 // --- Dependency Injection ---
 const usuarioRolRepository = new MysqlUsuarioRolRepository();

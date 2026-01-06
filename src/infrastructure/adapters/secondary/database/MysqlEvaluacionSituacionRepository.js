@@ -1,8 +1,10 @@
-const IEvaluacionSituacionRepository = require('../../../../../domain/repositories/IEvaluacionSituacionRepository');
-const EvaluacionSituacion = require('../../../../../domain/entities/EvaluacionSituacion');
-const orm = require('../../../database/connection/dataBase.orm');
-const sql = require('../../../database/connection/dataBase.sql');
-const { cifrarDato, descifrarDato } = require('../../../../../application/controller/encrypDates');
+const path = require('path');
+const BASE_PATH = path.resolve(__dirname, '../../../..');
+const IEvaluacionSituacionRepository = require(path.join(BASE_PATH, 'domain/repositories/IEvaluacionSituacionRepository'));
+const EvaluacionSituacion = require(path.join(BASE_PATH, 'domain/entities/EvaluacionSituacion'));
+const orm = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.orm'));
+const sql = require(path.join(BASE_PATH, 'infrastructure/database/connection/dataBase.sql'));
+const { cifrarDato, descifrarDato } = require(path.join(BASE_PATH, 'application/controller/encrypDates'));
 
 class MysqlEvaluacionSituacionRepository extends IEvaluacionSituacionRepository {
     constructor() {

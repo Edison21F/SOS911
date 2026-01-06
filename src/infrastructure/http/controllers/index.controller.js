@@ -2,9 +2,9 @@ const passport = require('passport'); // Keep for req.login/logout
 const MysqlMongoUsuarioRepository = require('../../adapters/secondary/database/MysqlMongoUsuarioRepository');
 
 // Use Cases
-const CheckRegistrationAvailability = require('../../../../application/use-cases/usuario/CheckRegistrationAvailability');
-const RegistrarUsuario = require('../../../../application/use-cases/usuario/RegistrarUsuario');
-const LoginUsuario = require('../../../../application/use-cases/usuario/LoginUsuario');
+const CheckRegistrationAvailability = require('../../../application/use-cases/usuario/CheckRegistrationAvailability');
+const RegistrarUsuario = require('../../../application/use-cases/usuario/RegistrarUsuario');
+const LoginUsuario = require('../../../application/use-cases/usuario/LoginUsuario');
 
 // Dependencies
 const usuarioRepository = new MysqlMongoUsuarioRepository();

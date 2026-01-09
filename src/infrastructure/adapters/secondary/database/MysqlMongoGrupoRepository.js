@@ -89,7 +89,7 @@ class MysqlMongoGrupoRepository extends IGrupoRepository {
                 c.nombre as cliente_nombre
             FROM 
                 grupos g
-            JOIN
+            LEFT JOIN
                 clientes c ON g.clienteId = c.id
         `;
 
@@ -131,7 +131,7 @@ class MysqlMongoGrupoRepository extends IGrupoRepository {
                  c.nombre as cliente_nombre
             FROM 
                 grupos g
-            JOIN
+            LEFT JOIN
                 clientes c ON g.clienteId = c.id
             WHERE 
                 g.id = ?

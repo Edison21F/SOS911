@@ -34,6 +34,15 @@ class SecurityService {
             return '';
         }
     }
+
+    // Spanish aliases for backward compatibility
+    cifrar(value) {
+        return this.encrypt(value);
+    }
+
+    descifrar(value) {
+        return this.decrypt(value);
+    }
 }
 
 module.exports = SecurityService;
